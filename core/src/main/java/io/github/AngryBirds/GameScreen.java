@@ -58,7 +58,7 @@ public class GameScreen implements Screen {
         catapult2.setPosition(78, 310);
 
         divide = (float) 14/4;
-        RedBird redBird = new RedBird(bird, bird.getWidth() / divide, bird.getHeight() / divide);2
+        RedBird redBird = new RedBird(bird, bird.getWidth() / divide, bird.getHeight() / divide);
         redBird.setPosition(40,350);
 
         pause.addListener(new ClickListener() {
