@@ -5,6 +5,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -17,6 +18,7 @@ public class GameScreen implements Screen {
     private Texture firstCatapult;
     private Texture secondCatapult;
     private Texture bird;
+    private Texture pauseButton;
     private Stage stage;
     private OrthographicCamera camera;
     private Viewport viewport;
@@ -38,28 +40,38 @@ public class GameScreen implements Screen {
         firstCatapult = new Texture("catapult_part1.png");
         bird = new Texture("redbird.png");
         secondCatapult = new Texture("catapult_part2.png");
+        pauseButton = new Texture("pauseButton.png");
 
+        float divide = (float) 4/3;
         Image mainscreen = new Image(gameScreen);
         mainscreen.setSize(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
-        Image catapult1 = new Image(firstCatapult);
-        float divide = (float) 4/3;
-        catapult1.setSize(catapult1.getWidth()/divide, catapult1.getHeight()/divide);
+
+        Catapult catapult1 = new Catapult(firstCatapult, firstCatapult.getWidth() / divide, firstCatapult.getHeight() / divide);
         catapult1.setPosition(100, 200);
 
+        Image pause = new Image(pauseButton);
+        pause.setSize(180, 160);
+        pause.setPosition(0,VIRTUAL_HEIGHT - pause.getHeight());
+
         divide = (float) 3/2;
-        Image catapult2 = new Image(secondCatapult);
-        catapult2.setSize(catapult2.getWidth()/divide , catapult2.getHeight()/divide);
+        Catapult catapult2 = new Catapult(secondCatapult, secondCatapult.getWidth() / divide, secondCatapult.getHeight() / divide);
         catapult2.setPosition(78, 310);
 
         divide = (float) 14/4;
-        Image redBird = new Image(bird);
-        redBird.setSize(redBird.getWidth()/divide , redBird.getHeight()/divide);
+        RedBird redBird = new RedBird(bird, bird.getWidth() / divide, bird.getHeight() / divide);2
         redBird.setPosition(40,350);
+
+        pause.addListener(new ClickListener() {
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new PauseMenu(game, viewport, camera, gameScreen ));
+            }
+        });
 
         stage.addActor(mainscreen);
         stage.addActor(catapult1);
         stage.addActor(redBird);
         stage.addActor(catapult2);
+        stage.addActor(pause);
     }
 
     @Override
