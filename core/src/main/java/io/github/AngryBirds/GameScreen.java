@@ -1,6 +1,7 @@
 package io.github.AngryBirds;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -139,7 +140,7 @@ public class GameScreen implements Screen {
 
 
         RedBird redBird = new RedBird();
-        redBird.getRed().setPosition(140,350);
+        redBird.getRed().setPosition(140,390);
 
         pause.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
@@ -181,6 +182,10 @@ public class GameScreen implements Screen {
     public void render(float v) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+            game.setScreen(new WinScreen(game));
+        }
 
         stage.act(v);
         stage.draw();

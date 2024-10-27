@@ -19,6 +19,7 @@ public class LevelsScreen implements Screen {
     private Texture levelsScreen;
     private Texture level1;
     private Texture backButton;
+    private Texture loadButton;
     private Stage stage;
     private OrthographicCamera camera;
     private Viewport viewport;
@@ -41,6 +42,7 @@ public class LevelsScreen implements Screen {
         levelsScreen = new Texture("levelScreen.jpg");
         level1 = new Texture("level1.png");
         backButton = new Texture("back.png");
+        loadButton = new Texture("load.png");
 
         Image mainscreen = new Image(levelsScreen);
         mainscreen.setSize(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
@@ -55,19 +57,30 @@ public class LevelsScreen implements Screen {
         level.setSize(80, 75);
         level.setPosition(60,510);
 
+        Image load = new Image(loadButton);
+        load.setSize(100,95);
+        load.setPosition(VIRTUAL_WIDTH- 110, 7);
+
+        load.addListener(new ClickListener() {
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new LoadScreen(game));
+            }
+        });
+
         Image back = new Image(backButton);
-        back.setColor(1, 1, 1, 0);
+        back.setSize(100, 90);
+        back.setPosition(6,7);
         back.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 game.setScreen(new MainMenu(game));
             }
         });
-        back.setSize(80, 80);
-        back.setPosition(0,0);
+
 
         stage.addActor(mainscreen);
         stage.addActor(level);
         stage.addActor(back);
+        stage.addActor(load);
     }
 
     @Override

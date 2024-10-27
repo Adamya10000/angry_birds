@@ -12,19 +12,18 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-public class MainMenu implements Screen {
+public class WinScreen implements Screen {
     private Main game;
     private Stage stage;
-    private Texture mainscreenTexture;
-    private Texture playButtonTexture;
-    private Texture quitButton;
+    private Texture loadscreenTexture;
+    private Texture levelclear;
     private OrthographicCamera camera;
     private Viewport viewport;
 
     private static final int VIRTUAL_WIDTH = 2400;
     private static final int VIRTUAL_HEIGHT = 1500;
 
-    public MainMenu(Main game) {
+    public WinScreen(Main game) {
         this.game = game;
 
         camera = new OrthographicCamera();
@@ -36,34 +35,23 @@ public class MainMenu implements Screen {
 
     @Override
     public void show() {
-        mainscreenTexture = new Texture("menu.png");
-        playButtonTexture = new Texture("playButton.png");
-        quitButton = new Texture("quit.png");
+        loadscreenTexture = new Texture("gamescreen.jpg");
+        levelclear = new Texture("levelClear.png");
 
-        Image mainscreen = new Image(mainscreenTexture);
-        mainscreen.setSize(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+        Image loadscreen = new Image(loadscreenTexture);
+        loadscreen.setSize(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
 
-        Image playButton = new Image(playButtonTexture);
-        playButton.addListener(new ClickListener() {
+        Image clear = new Image(levelclear);
+        clear.setSize(levelclear.getWidth()*2, levelclear.getHeight()*2);
+        clear.setPosition(((float) VIRTUAL_WIDTH /2) - clear.getWidth()/2,((float) VIRTUAL_HEIGHT /2) - clear.getHeight()/2);
+        clear.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 game.setScreen(new LevelsScreen(game));
             }
         });
-        playButton.setSize(400, 400);
-        playButton.setPosition((VIRTUAL_WIDTH - 400) / 2f, 0);
 
-        Image quit = new Image(quitButton);
-        quit.setSize(200, 200);
-        quit.setPosition(0, 0);
-        quit.addListener(new ClickListener() {
-            public void clicked(InputEvent event, float x, float y) {
-                Gdx.app.exit();
-            }
-        });
-
-        stage.addActor(mainscreen);
-        stage.addActor(playButton);
-        stage.addActor(quit);
+        stage.addActor(loadscreen);
+        stage.addActor(clear);
     }
 
     @Override
@@ -95,7 +83,6 @@ public class MainMenu implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
-        mainscreenTexture.dispose();
-        playButtonTexture.dispose();
+        levelclear.dispose();
     }
 }

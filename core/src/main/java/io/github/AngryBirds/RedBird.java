@@ -3,7 +3,7 @@ package io.github.AngryBirds;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
-public class RedBird{
+public class RedBird extends Bird{
     private static Texture bird = new Texture("redbird.png");
 
     private Image red;

@@ -24,6 +24,7 @@ public class PauseMenu implements Screen {
     private Texture gameScreenTexture;
     private Texture backButton;
     private Texture resumeButton;
+    private Texture saveButton;
 
     public PauseMenu(Main game, Viewport viewport, OrthographicCamera camera, Texture gameScreenTexture) {
         this.viewport = viewport;
@@ -41,6 +42,7 @@ public class PauseMenu implements Screen {
         restartButton = new Texture("restart.png");
         backButton = new Texture("back.png");
         resumeButton = new Texture("resume.png");
+        saveButton = new Texture("save.png");
 
         Image restartImage = new Image(restartButton);
         restartImage.setSize(200, 190);
@@ -49,6 +51,16 @@ public class PauseMenu implements Screen {
         restartImage.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 game.setScreen(new GameScreen(game));
+            }
+        });
+
+        Image saveImage = new Image(saveButton);
+        saveImage.setSize(200, 190);
+        saveImage.setPosition(300, 600);
+
+        saveImage.addListener(new ClickListener() {
+            public void clicked(InputEvent event, float x, float y) {
+
             }
         });
 
@@ -74,6 +86,7 @@ public class PauseMenu implements Screen {
 
 
         stage.addActor(restartImage);
+        stage.addActor(saveImage);
         stage.addActor(back);
         stage.addActor(resume);
     }

@@ -12,19 +12,19 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-public class MainMenu implements Screen {
+public class LoadScreen implements Screen {
     private Main game;
     private Stage stage;
-    private Texture mainscreenTexture;
-    private Texture playButtonTexture;
-    private Texture quitButton;
+    private Texture loadscreenTexture;
+    private Texture backButton;
+    private Texture loadgame;
     private OrthographicCamera camera;
     private Viewport viewport;
 
     private static final int VIRTUAL_WIDTH = 2400;
     private static final int VIRTUAL_HEIGHT = 1500;
 
-    public MainMenu(Main game) {
+    public LoadScreen(Main game) {
         this.game = game;
 
         camera = new OrthographicCamera();
@@ -36,34 +36,30 @@ public class MainMenu implements Screen {
 
     @Override
     public void show() {
-        mainscreenTexture = new Texture("menu.png");
-        playButtonTexture = new Texture("playButton.png");
-        quitButton = new Texture("quit.png");
+        loadscreenTexture = new Texture("loadScreen.jpg");
+        backButton = new Texture("back.png");
+        loadgame = new Texture("loadgame.png");
 
-        Image mainscreen = new Image(mainscreenTexture);
-        mainscreen.setSize(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+        Image loadGame = new Image(loadgame);
+        loadGame.setPosition(650, 1100);
+        loadGame.setSize(loadgame.getWidth()*3, loadgame.getHeight()*3);
 
-        Image playButton = new Image(playButtonTexture);
-        playButton.addListener(new ClickListener() {
+        Image loadscreen = new Image(loadscreenTexture);
+        loadscreen.setSize(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+
+        Image back = new Image(backButton);
+        back.setSize(150, 155);
+        back.setPosition(20,20);
+        back.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 game.setScreen(new LevelsScreen(game));
             }
         });
-        playButton.setSize(400, 400);
-        playButton.setPosition((VIRTUAL_WIDTH - 400) / 2f, 0);
 
-        Image quit = new Image(quitButton);
-        quit.setSize(200, 200);
-        quit.setPosition(0, 0);
-        quit.addListener(new ClickListener() {
-            public void clicked(InputEvent event, float x, float y) {
-                Gdx.app.exit();
-            }
-        });
+        stage.addActor(loadscreen);
+        stage.addActor(back);
+        stage.addActor(loadGame);
 
-        stage.addActor(mainscreen);
-        stage.addActor(playButton);
-        stage.addActor(quit);
     }
 
     @Override
@@ -95,7 +91,7 @@ public class MainMenu implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
-        mainscreenTexture.dispose();
-        playButtonTexture.dispose();
+        loadscreenTexture.dispose();
+        backButton.dispose();
     }
 }

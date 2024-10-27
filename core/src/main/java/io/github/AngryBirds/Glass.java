@@ -1,4 +1,9 @@
 package io.github.AngryBirds;
 
-public class Glass {
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+
+public class Glass extends Block{
+    public Glass(TextureRegion texture) {
+        super(texture);
+    }
 }
