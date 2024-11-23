@@ -10,11 +10,14 @@ public class LevelManager {
     private Map<Integer, LevelData> levels;
     private TextureRegion[] blockTextures;
     private TextureRegion[] pigTextures;
+    private TextureRegion[] birdTextures;
 
-    public LevelManager(TextureRegion[] blockTextures, TextureRegion[] pigTextures) {
+
+    public LevelManager(TextureRegion[] blockTextures, TextureRegion[] pigTextures, TextureRegion[] birdTextures) {
         this.levels = new HashMap<>();
         this.blockTextures = blockTextures;
         this.pigTextures = pigTextures;
+        this.birdTextures = birdTextures;
         initializeLevels();
     }
 
@@ -67,6 +70,17 @@ public class LevelManager {
             LevelData.GameObject.Type.PIG, 1962, 313, 0, pigTextures[0]));
         level1Objects.add(new LevelData.GameObject(
             LevelData.GameObject.Type.PIG, 1758, 829, 0, pigTextures[1]));
+
+        // Birds
+        level1Objects.add(new LevelData.GameObject(
+            LevelData.GameObject.Type.REDBIRD, 170, 360, 0, birdTextures[0]));
+
+        level1Objects.add(new LevelData.GameObject(
+            LevelData.GameObject.Type.YELLOWBIRD, 100, 200, 0, birdTextures[1]));
+
+        level1Objects.add(new LevelData.GameObject(
+            LevelData.GameObject.Type.BLACKBIRD, 30, 200, 0, birdTextures[2]));
+
 
         levels.put(1, new LevelData(1, level1Objects, 1000, 3));
     }

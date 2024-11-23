@@ -27,7 +27,8 @@ public class GameScreen implements Screen {
     private Texture pauseButton;
     private Texture blockSprites;
     private Texture pigSprites;
-    private TextureRegion block1, block2, block3, block4, pig1, pig2;
+    private Texture birdSprites;
+    private TextureRegion block1, block2, block3, block4, pig1, pig2, red, yellow, black;
 
     // Constants
     private static final int VIRTUAL_WIDTH = 2560;
@@ -51,6 +52,7 @@ public class GameScreen implements Screen {
         pauseButton = new Texture("pauseButton.png");
         blockSprites = new Texture("blockSprites.png");
         pigSprites = new Texture("pigSprites.png");
+        birdSprites = new Texture("birdSprites.png");
 
         // Initialize texture regions
         pig1 = new TextureRegion(pigSprites, 255, 640, 99, 98);
@@ -60,6 +62,10 @@ public class GameScreen implements Screen {
         block2 = new TextureRegion(blockSprites, 490, 715, 167, 18);
         block3 = new TextureRegion(blockSprites, 806, 504, 83, 40);
         block4 = new TextureRegion(blockSprites, 161, 857, 42, 40);
+
+        red = new TextureRegion(birdSprites, 300, 520, 65, 62);
+        yellow = new TextureRegion(birdSprites, 270, 370, 73, 71);
+        black = new TextureRegion(birdSprites, 1, 378, 65, 84);
     }
 
     private void setupUI() {
@@ -86,11 +92,7 @@ public class GameScreen implements Screen {
         Image catapult2 = catapult.getCatapult2();
         catapult2.setPosition(178, 310);
 
-        RedBird redBird = new RedBird();
-        redBird.getRed().setPosition(140, 390);
-
         stage.addActor(catapult1);
-        stage.addActor(redBird.getRed());
         stage.addActor(catapult2);
     }
 
@@ -111,7 +113,8 @@ public class GameScreen implements Screen {
         // Initialize level manager with loaded textures
         TextureRegion[] blockTextures = {block1, block2, block3, block4};
         TextureRegion[] pigTextures = {pig1, pig2};
-        levelManager = new LevelManager(blockTextures, pigTextures);
+        TextureRegion[] birdTextures = {red, yellow, black};
+        levelManager = new LevelManager(blockTextures, pigTextures, birdTextures);
 
         // Load and build current level
         LevelData currentLevelData = levelManager.getLevel(currentLevel);
@@ -160,6 +163,28 @@ public class GameScreen implements Screen {
                     Image pigImage = pig.getPig();
                     pigImage.setPosition(obj.getX(), obj.getY());
                     stage.addActor(pigImage);
+                    break;
+
+                case REDBIRD:
+                    RedBird redBird = new RedBird(obj.getTexture());
+                    Image redImage = redBird.getRed();
+                    redImage.setPosition(obj.getX(), obj.getY());
+                    redImage.setSize(redBird.getRed().getWidth() * 2, redBird.getRed().getHeight() * 2);
+                    stage.addActor(redImage);
+                    break;
+                case YELLOWBIRD:
+                    YellowBird yellowBird = new YellowBird(obj.getTexture());
+                    Image yellowImage = yellowBird.getYellow();
+                    yellowImage.setPosition(obj.getX(), obj.getY());
+                    //yellowImage.setSize(yellowBird.getYellow().getWidth() * 2, yellowBird.getYellow().getHeight() * 2);
+                    stage.addActor(yellowImage);
+                    break;
+                case BLACKBIRD:
+                    BlackBird blackBird = new BlackBird(obj.getTexture());
+                    Image blackImage = blackBird.getBlack();
+                    blackImage.setPosition(obj.getX(), obj.getY());
+                    //blackImage.setSize(blackBird.getYellow().getWidth() * 2, blackBird.getYellow().getHeight() * 2);
+                    stage.addActor(blackImage);
                     break;
             }
         }
