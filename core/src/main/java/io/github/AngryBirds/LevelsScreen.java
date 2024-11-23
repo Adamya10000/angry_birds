@@ -51,7 +51,7 @@ public class LevelsScreen implements Screen {
         level.setColor(1, 1, 1, 0);
         level.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new GameScreen(game));
+                game.setScreen(new GameScreen(game,1));
             }
         });
         level.setSize(80, 75);

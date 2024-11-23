@@ -50,7 +50,7 @@ public class PauseMenu implements Screen {
 
         restartImage.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new GameScreen(game));
+                game.setScreen(new GameScreen(game, 1));
             }
         });
 
@@ -70,7 +70,7 @@ public class PauseMenu implements Screen {
 
         resume.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new GameScreen(game));
+                game.setScreen(new GameScreen(game, 1));
             }
         });
 
