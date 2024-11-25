@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -34,9 +35,14 @@ public class GameScreen implements Screen {
     private static final int VIRTUAL_WIDTH = 2560;
     private static final int VIRTUAL_HEIGHT = 1440;
 
+    // Catapult and bird sequence
+    private float catapultX = 170; // Catapult's X position
+    private float catapultY = 360; // Catapult's Y position
+    private Image[] birds; // Array to hold the bird images in sequence
+    private int currentBirdIndex = 0; // Tracks the currently active bird
+
     // Level state
     private int currentScore;
-    private int birdsRemaining;
 
     public GameScreen(Main game, int level) {
         this.game = game;
@@ -96,32 +102,62 @@ public class GameScreen implements Screen {
         stage.addActor(catapult2);
     }
 
+    private void setupBirds() {
+        Image redImage = new Image(red);
+        Image yellowImage = new Image(yellow);
+        Image blackImage = new Image(black);
+
+        // Position birds initially off-screen, only the first bird is on the catapult
+        redImage.setPosition(catapultX, catapultY);
+        redImage.setSize(redImage.getWidth() * 2, redImage.getHeight() * 2);
+        yellowImage.setPosition(-100, -100);
+        yellowImage.setSize(yellowImage.getWidth() * 2, yellowImage.getHeight() * 2);
+        blackImage.setPosition(-100, -100);
+        blackImage.setSize(blackImage.getWidth() * 2, blackImage.getHeight() * 2);
+
+
+        // Store in bird array
+        birds = new Image[]{redImage, yellowImage, blackImage};
+
+        // Add to stage and enable drag and drop
+        for (int i = 0; i < birds.length; i++) {
+            stage.addActor(birds[i]);
+            enableDragAndDrop(birds[i], i);
+        }
+    }
+
+    private void enableDragAndDrop(Image birdImage, int birdIndex) {
+        birdImage.addListener(new DragListener() {
+            @Override
+            public void dragStart(InputEvent event, float x, float y, int pointer) {
+                if (birdIndex != currentBirdIndex) {
+                    cancel(); // Only allow dragging the current bird
+                }
+            }
+
+            @Override
+            public void drag(InputEvent event, float x, float y, int pointer) {
+                birdImage.moveBy(x - birdImage.getWidth() / 2, y - birdImage.getHeight() / 2);
+            }
+
+            @Override
+            public void dragStop(InputEvent event, float x, float y, int pointer) {
+                // Once dragged, move the bird out and position the next one in the catapult
+                birdImage.setPosition(-100, -100); // Move off-screen
+                currentBirdIndex++;
+                if (currentBirdIndex < birds.length) {
+                    birds[currentBirdIndex].setPosition(catapultX, catapultY);
+                }
+            }
+        });
+    }
+
     private void doubler(Image image) {
         image.setSize(image.getWidth() * 2, image.getHeight() * 2);
     }
 
     private void doublerH(Image image) {
         image.setSize((image.getWidth() * 4) / 3, image.getHeight() * 2);
-    }
-
-    @Override
-    public void show() {
-        loadTextures();
-        setupUI();
-        setupCatapult();
-
-        // Initialize level manager with loaded textures
-        TextureRegion[] blockTextures = {block1, block2, block3, block4};
-        TextureRegion[] pigTextures = {pig1, pig2};
-        TextureRegion[] birdTextures = {red, yellow, black};
-        levelManager = new LevelManager(blockTextures, pigTextures, birdTextures);
-
-        // Load and build current level
-        LevelData currentLevelData = levelManager.getLevel(currentLevel);
-        if (currentLevelData != null) {
-            birdsRemaining = currentLevelData.getAvailableBirds();
-            buildLevel(currentLevelData);
-        }
     }
 
     private void buildLevel(LevelData levelData) {
@@ -164,29 +200,26 @@ public class GameScreen implements Screen {
                     pigImage.setPosition(obj.getX(), obj.getY());
                     stage.addActor(pigImage);
                     break;
-
-                case REDBIRD:
-                    RedBird redBird = new RedBird(obj.getTexture());
-                    Image redImage = redBird.getRed();
-                    redImage.setPosition(obj.getX(), obj.getY());
-                    redImage.setSize(redBird.getRed().getWidth() * 2, redBird.getRed().getHeight() * 2);
-                    stage.addActor(redImage);
-                    break;
-                case YELLOWBIRD:
-                    YellowBird yellowBird = new YellowBird(obj.getTexture());
-                    Image yellowImage = yellowBird.getYellow();
-                    yellowImage.setPosition(obj.getX(), obj.getY());
-                    //yellowImage.setSize(yellowBird.getYellow().getWidth() * 2, yellowBird.getYellow().getHeight() * 2);
-                    stage.addActor(yellowImage);
-                    break;
-                case BLACKBIRD:
-                    BlackBird blackBird = new BlackBird(obj.getTexture());
-                    Image blackImage = blackBird.getBlack();
-                    blackImage.setPosition(obj.getX(), obj.getY());
-                    //blackImage.setSize(blackBird.getYellow().getWidth() * 2, blackBird.getYellow().getHeight() * 2);
-                    stage.addActor(blackImage);
-                    break;
             }
+        }
+    }
+
+    @Override
+    public void show() {
+        loadTextures();
+        setupUI();
+        setupCatapult();
+        setupBirds();
+
+        // Initialize level manager with loaded textures
+        TextureRegion[] blockTextures = {block1, block2, block3, block4};
+        TextureRegion[] pigTextures = {pig1, pig2};
+        TextureRegion[] birdTextures = {red, yellow, black};
+        levelManager = new LevelManager(blockTextures, pigTextures, birdTextures);
+
+        LevelData currentLevelData = levelManager.getLevel(currentLevel);
+        if (currentLevelData != null) {
+            buildLevel(currentLevelData);
         }
     }
 
@@ -194,11 +227,6 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        // Debug: Press ENTER to simulate winning
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
-            game.setScreen(new WinScreen(game));
-        }
 
         stage.act(delta);
         stage.draw();
