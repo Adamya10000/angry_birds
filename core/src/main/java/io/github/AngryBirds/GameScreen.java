@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.scenes.scene2d.Action;
 
 public class GameScreen implements Screen {
     private Main game;
@@ -34,6 +35,9 @@ public class GameScreen implements Screen {
     // Constants
     private static final int VIRTUAL_WIDTH = 2560;
     private static final int VIRTUAL_HEIGHT = 1440;
+
+    public static final float GRAVITY = -500f; // Gravity constant (pixels/sec^2)
+    public static final float GROUND_Y = 0;   // Ground level Y position
 
     // Catapult and bird sequence
     private float catapultX = 170; // Catapult's X position
@@ -115,11 +119,8 @@ public class GameScreen implements Screen {
         blackImage.setPosition(-100, -100);
         blackImage.setSize(blackImage.getWidth() * 2, blackImage.getHeight() * 2);
 
-
-        // Store in bird array
         birds = new Image[]{redImage, yellowImage, blackImage};
 
-        // Add to stage and enable drag and drop
         for (int i = 0; i < birds.length; i++) {
             stage.addActor(birds[i]);
             enableDragAndDrop(birds[i], i);
@@ -128,6 +129,8 @@ public class GameScreen implements Screen {
 
     private void enableDragAndDrop(Image birdImage, int birdIndex) {
         birdImage.addListener(new DragListener() {
+            private float releaseX, releaseY; // Declare releaseX and releaseY here
+
             @Override
             public void dragStart(InputEvent event, float x, float y, int pointer) {
                 if (birdIndex != currentBirdIndex) {
@@ -142,8 +145,25 @@ public class GameScreen implements Screen {
 
             @Override
             public void dragStop(InputEvent event, float x, float y, int pointer) {
-                // Once dragged, move the bird out and position the next one in the catapult
-                birdImage.setPosition(-100, -100); // Move off-screen
+                // Get the release position
+                releaseX = birdImage.getX();
+                releaseY = birdImage.getY();
+
+                // Calculate initial velocity based on drag distance from catapult
+                float dx = catapultX - releaseX;
+                float dy = catapultY - releaseY;
+                float distance = (float) Math.sqrt(dx * dx + dy * dy);
+                float maxDistance = 200; // Maximum pull distance
+
+                // Scale velocity based on drag distance, capped at max distance
+                float velocityScale = Math.min(distance / maxDistance, 1.0f);
+                float velocityX = dx * velocityScale * 0.5f; // Adjust multiplier for speed
+                float velocityY = dy * velocityScale * 0.5f;
+
+                // Apply projectile motion
+                birdImage.addAction(new ProjectileAction(velocityX, velocityY));
+
+                // Set next bird on the catapult
                 currentBirdIndex++;
                 if (currentBirdIndex < birds.length) {
                     birds[currentBirdIndex].setPosition(catapultX, catapultY);
@@ -152,6 +172,7 @@ public class GameScreen implements Screen {
         });
     }
 
+
     private void doubler(Image image) {
         image.setSize(image.getWidth() * 2, image.getHeight() * 2);
     }
@@ -159,6 +180,8 @@ public class GameScreen implements Screen {
     private void doublerH(Image image) {
         image.setSize((image.getWidth() * 4) / 3, image.getHeight() * 2);
     }
+
+
 
     private void buildLevel(LevelData levelData) {
         for (LevelData.GameObject obj : levelData.getObjects()) {
@@ -211,7 +234,6 @@ public class GameScreen implements Screen {
         setupCatapult();
         setupBirds();
 
-        // Initialize level manager with loaded textures
         TextureRegion[] blockTextures = {block1, block2, block3, block4};
         TextureRegion[] pigTextures = {pig1, pig2};
         TextureRegion[] birdTextures = {red, yellow, black};
