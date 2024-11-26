@@ -1,22 +1,49 @@
 package io.github.AngryBirds;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
-public class Block {
-    private TextureRegion texture;
-    private Vector2 size;
+abstract class Block implements GameObject {
+    protected Image blockImage;
+    protected float health;
+    protected boolean destroyed;
+    protected float mass;
 
-    private Image block;
-
-    public Block(TextureRegion texture) {
-        this.texture = texture;
-        this.block = new Image(texture);
+    public Block(TextureRegion texture, float maxHealth, float mass) {
+        blockImage = new Image(texture);
+        this.health = maxHealth;
+        this.mass = mass;
+        this.destroyed = false;
     }
 
-    public Image getBlock() {
-        return block;
+    @Override
+    public void takeDamage(float impactForce) {
+        float damage = impactForce * 0.3f; // Adjust multiplier based on block type
+        health -= damage;
+
+        if (health <= 0) {
+            destroyed = true;
+            blockImage.remove(); // Remove from stage
+        }
+    }
+
+    @Override
+    public boolean isDestroyed() {
+        return destroyed;
+    }
+
+    @Override
+    public Image getImage() {
+        return blockImage;
+    }
+
+    @Override
+    public float getHealth() {
+        return health;
+    }
+
+    @Override
+    public float getMass() {
+        return mass;
     }
 }

@@ -1,7 +1,6 @@
 package io.github.AngryBirds;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -14,7 +13,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.badlogic.gdx.scenes.scene2d.Action;
+
+import java.util.*;
 
 public class GameScreen implements Screen {
     private Main game;
@@ -23,6 +23,8 @@ public class GameScreen implements Screen {
     private Viewport viewport;
     private LevelManager levelManager;
     private int currentLevel;
+    private CollisionManager collisionManager;
+    private List<Bird> birdObjects = new ArrayList<>();
 
     // Textures
     private Texture gameScreen;
@@ -55,6 +57,7 @@ public class GameScreen implements Screen {
         this.viewport = new StretchViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, camera);
         this.stage = new Stage(viewport);
         Gdx.input.setInputProcessor(stage);
+        this.collisionManager = new CollisionManager(stage);
     }
 
     private void loadTextures() {
@@ -111,19 +114,34 @@ public class GameScreen implements Screen {
         Image yellowImage = new Image(yellow);
         Image blackImage = new Image(black);
 
+        // Create Bird objects with their respective types
+        RedBird redBird = new RedBird(red);
+        YellowBird yellowBird = new YellowBird(yellow);
+        BlackBird blackBird = new BlackBird(black);
+
         // Position birds initially off-screen, only the first bird is on the catapult
+        redImage = redBird.getImage();
         redImage.setPosition(catapultX, catapultY);
         redImage.setSize(redImage.getWidth() * 2, redImage.getHeight() * 2);
+
+        yellowImage = yellowBird.getImage();
         yellowImage.setPosition(-100, -100);
         yellowImage.setSize(yellowImage.getWidth() * 2, yellowImage.getHeight() * 2);
+
+        blackImage = blackBird.getImage();
         blackImage.setPosition(-100, -100);
         blackImage.setSize(blackImage.getWidth() * 2, blackImage.getHeight() * 2);
 
+        // Add birds to lists and stage
         birds = new Image[]{redImage, yellowImage, blackImage};
+        birdObjects = Arrays.asList(redBird, yellowBird, blackBird);
 
         for (int i = 0; i < birds.length; i++) {
             stage.addActor(birds[i]);
             enableDragAndDrop(birds[i], i);
+
+            // Add to collision manager
+            collisionManager.addBird(birdObjects.get(i));
         }
     }
 
@@ -161,7 +179,20 @@ public class GameScreen implements Screen {
                 float velocityY = dy * velocityScale * 0.5f;
 
                 // Apply projectile motion
-                birdImage.addAction(new ProjectileAction(velocityX, velocityY));
+                Bird currentBird = birdObjects.get(birdIndex);
+                birdImage.addAction(new ProjectileAction(velocityX, velocityY,200f) {
+                    @Override
+                    public boolean act(float delta) {
+                        boolean finished = super.act(delta);
+
+                        // Trigger collision check when bird is in motion
+                        if (!finished) {
+                            collisionManager.checkCollisions();
+                        }
+
+                        return finished;
+                    }
+                });
 
                 // Set next bird on the catapult
                 currentBirdIndex++;
@@ -181,48 +212,53 @@ public class GameScreen implements Screen {
         image.setSize((image.getWidth() * 4) / 3, image.getHeight() * 2);
     }
 
-
-
     private void buildLevel(LevelData levelData) {
         for (LevelData.GameObject obj : levelData.getObjects()) {
+            GameObject gameObject = null;
+            Image objectImage = null;
+
             switch (obj.getType()) {
                 case WOOD:
-                    Wood wood = new Wood(obj.getTexture());
-                    Image woodImage = wood.getBlock();
-                    woodImage.setPosition(obj.getX(), obj.getY());
-                    woodImage.setRotation(obj.getRotation());
+                    gameObject = new Wood(obj.getTexture());
+                    objectImage = gameObject.getImage();
                     if (obj.getTexture() == block1) {
-                        doubler(woodImage);
+                        objectImage.setSize(objectImage.getWidth() * 2, objectImage.getHeight() * 2);
                     } else {
-                        doublerH(woodImage);
+                        objectImage.setSize((objectImage.getWidth() * 4) / 3, objectImage.getHeight() * 2);
                     }
-                    stage.addActor(woodImage);
                     break;
 
                 case STONE:
-                    Stone stone = new Stone(obj.getTexture());
-                    Image stoneImage = stone.getBlock();
-                    stoneImage.setPosition(obj.getX(), obj.getY());
-                    stoneImage.setRotation(obj.getRotation());
-                    doubler(stoneImage);
-                    stage.addActor(stoneImage);
+                    gameObject = new Stone(obj.getTexture());
+                    objectImage = gameObject.getImage();
+                    objectImage.setSize(objectImage.getWidth() * 2, objectImage.getHeight() * 2);
                     break;
 
                 case GLASS:
-                    Glass glass = new Glass(obj.getTexture());
-                    Image glassImage = glass.getBlock();
-                    glassImage.setPosition(obj.getX(), obj.getY());
-                    glassImage.setRotation(obj.getRotation());
-                    doubler(glassImage);
-                    stage.addActor(glassImage);
+                    gameObject = new Glass(obj.getTexture());
+                    objectImage = gameObject.getImage();
+                    objectImage.setSize(objectImage.getWidth() * 2, objectImage.getHeight() * 2);
                     break;
 
                 case PIG:
-                    Pig pig = new Pig(obj.getTexture());
-                    Image pigImage = pig.getPig();
-                    pigImage.setPosition(obj.getX(), obj.getY());
-                    stage.addActor(pigImage);
+                    gameObject = new Pig(obj.getTexture());
+                    objectImage = gameObject.getImage();
                     break;
+
+                default:
+                    continue;
+            }
+
+            // Set position and rotation
+            objectImage.setPosition(obj.getX(), obj.getY());
+            objectImage.setRotation(obj.getRotation());
+
+            // Add to stage
+            stage.addActor(objectImage);
+
+            // Add to collision manager
+            if (gameObject != null) {
+                collisionManager.addGameObject(gameObject);
             }
         }
     }
@@ -251,6 +287,10 @@ public class GameScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         stage.act(delta);
+
+        // Check collisions every frame
+        collisionManager.checkCollisions();
+
         stage.draw();
     }
 

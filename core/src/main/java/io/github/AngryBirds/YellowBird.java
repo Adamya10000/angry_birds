@@ -8,12 +8,6 @@ public class YellowBird extends Bird{
     private TextureRegion texture;
 
     public YellowBird(TextureRegion texture) {
-        this.texture = texture;
-        this.yellow = new Image(texture);
-        //yellow.setSize((yellow.getWidth()*4)/14, (yellow.getHeight()*4)/14);
-    }
-
-    public Image getYellow() {
-        return yellow;
+        super(texture, BirdType.YELLOW);
     }
 }
