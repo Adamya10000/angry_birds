@@ -1,12 +1,9 @@
 package io.github.AngryBirds;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Vector2;
 
 public class Wood extends Block {
-
-    public Wood(TextureRegion texture) {
-        super(texture);
+    public Wood(TextureRegion texture, PhysicsManager physicsManager, float x, float y, float rotation) {
+        super(texture, 100f, 10f, physicsManager, x, y,rotation);
     }
 }

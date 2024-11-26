@@ -7,13 +7,7 @@ public class BlackBird extends Bird{
     private Image black;
     private TextureRegion texture;
 
-    public BlackBird(TextureRegion texture) {
-        this.texture = texture;
-        this.black = new Image(texture);
-        //yellow.setSize((yellow.getWidth()*4)/14, (yellow.getHeight()*4)/14);
-    }
-
-    public Image getBlack() {
-        return black;
+    public BlackBird(TextureRegion texture, PhysicsManager physicsManager, float x, float y) {
+        super(texture,BirdType.BLACK, physicsManager, x, y);
     }
 }

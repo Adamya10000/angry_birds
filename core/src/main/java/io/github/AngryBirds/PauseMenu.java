@@ -25,8 +25,9 @@ public class PauseMenu implements Screen {
     private Texture backButton;
     private Texture resumeButton;
     private Texture saveButton;
+    private int level;
 
-    public PauseMenu(Main game, Viewport viewport, OrthographicCamera camera, Texture gameScreenTexture) {
+    public PauseMenu(Main game, Viewport viewport, OrthographicCamera camera, Texture gameScreenTexture, int level) {
         this.viewport = viewport;
         this.camera = camera;
         this.game = game;
@@ -34,6 +35,7 @@ public class PauseMenu implements Screen {
         this.batch = new SpriteBatch();
         this.shapeRenderer = new ShapeRenderer();
         this.stage = new Stage(viewport);
+        this.level = level;
         Gdx.input.setInputProcessor(stage);
     }
 
@@ -50,7 +52,7 @@ public class PauseMenu implements Screen {
 
         restartImage.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new GameScreen(game, 1));
+                game.setScreen(new GameScreen(game, level));
             }
         });
 

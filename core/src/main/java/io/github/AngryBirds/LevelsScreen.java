@@ -17,7 +17,7 @@ import java.awt.*;
 public class LevelsScreen implements Screen {
     private Main game;
     private Texture levelsScreen;
-    private Texture level1;
+    private Texture level;
     private Texture backButton;
     private Texture loadButton;
     private Stage stage;
@@ -40,22 +40,22 @@ public class LevelsScreen implements Screen {
     @Override
     public void show() {
         levelsScreen = new Texture("levelScreen.jpg");
-        level1 = new Texture("level1.png");
+        level = new Texture("level1.png");
         backButton = new Texture("back.png");
         loadButton = new Texture("load.png");
 
         Image mainscreen = new Image(levelsScreen);
         mainscreen.setSize(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
 
-        Image level = new Image(level1);
-        level.setColor(1, 1, 1, 0);
-        level.addListener(new ClickListener() {
+        Image level1 = new Image(level);
+        level1.setColor(1, 1, 1, 0);
+        level1.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 game.setScreen(new GameScreen(game,1));
             }
         });
-        level.setSize(80, 75);
-        level.setPosition(60,510);
+        level1.setSize(80, 75);
+        level1.setPosition(60,510);
 
         Image load = new Image(loadButton);
         load.setSize(100,95);
@@ -64,6 +64,15 @@ public class LevelsScreen implements Screen {
         load.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 game.setScreen(new LoadScreen(game));
+            }
+        });
+
+        Image level2 = new Image(level);
+        level2.setSize(80, 75);
+        level2.setPosition(160, 510);
+        level2.addListener(new ClickListener() {
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new GameScreen(game,2));
             }
         });
 
@@ -78,7 +87,8 @@ public class LevelsScreen implements Screen {
 
 
         stage.addActor(mainscreen);
-        stage.addActor(level);
+        stage.addActor(level1);
+        stage.addActor(level2);
         stage.addActor(back);
         stage.addActor(load);
     }

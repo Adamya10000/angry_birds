@@ -2,15 +2,17 @@
 package io.github.AngryBirds;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class LevelData {
-    private List<GameObject> objects;
+    private ArrayList<GameObj> objects;
     private int levelNumber;
     private int requiredScore;
     private int availableBirds;
 
-    public static class GameObject {
+    public static class GameObj {
         public enum Type {
             WOOD, STONE, GLASS, PIG, REDBIRD, YELLOWBIRD, BLACKBIRD
         }
@@ -21,7 +23,7 @@ public class LevelData {
         private float rotation;
         private TextureRegion texture;
 
-        public GameObject(Type type, float x, float y, float rotation, TextureRegion texture) {
+        public GameObj(Type type, float x, float y, float rotation, TextureRegion texture) {
             this.type = type;
             this.x = x;
             this.y = y;
@@ -37,14 +39,14 @@ public class LevelData {
         public TextureRegion getTexture() { return texture; }
     }
 
-    public LevelData(int levelNumber, List<GameObject> objects, int requiredScore, int availableBirds) {
+    public LevelData(int levelNumber, ArrayList<GameObj> objects, int requiredScore, int availableBirds) {
         this.levelNumber = levelNumber;
         this.objects = objects;
         this.requiredScore = requiredScore;
         this.availableBirds = availableBirds;
     }
 
-    public List<GameObject> getObjects() { return objects; }
+    public ArrayList<GameObj> getObjects() { return objects; }
     public int getLevelNumber() { return levelNumber; }
     public int getRequiredScore() { return requiredScore; }
     public int getAvailableBirds() { return availableBirds; }

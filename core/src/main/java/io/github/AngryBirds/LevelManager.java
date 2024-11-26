@@ -1,6 +1,8 @@
 package io.github.AngryBirds;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,68 +23,103 @@ public class LevelManager {
         initializeLevels();
     }
 
-    private void initializeLevels() {
+    private void level1() {
         // Level 1
-        List<LevelData.GameObject> level1Objects = new ArrayList<>();
+        ArrayList<LevelData.GameObj> level1Objects = new ArrayList<>();
 
-        // Long Wood Blocks
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.WOOD, 1400, 277, 0, blockTextures[0]));
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.WOOD, 1808, 277, 0, blockTextures[0]));
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.WOOD, 1400, 535, 0, blockTextures[0]));
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.WOOD, 1808, 535, 0, blockTextures[0]));
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.WOOD, 1604, 793, 0, blockTextures[0]));
+//        // Long Wood Blocks
+//        level1Objects.add(new LevelData.GameObj(
+//            LevelData.GameObj.Type.WOOD, 1400, 200, 0, blockTextures[0]));
+//        level1Objects.add(new LevelData.GameObj(
+//            LevelData.GameObj.Type.WOOD, 1808, 200, 0, blockTextures[0]));
+//        level1Objects.add(new LevelData.GameObj(
+//            LevelData.GameObj.Type.WOOD, 1400, 500, 0, blockTextures[0]));
+//        level1Objects.add(new LevelData.GameObj(
+//            LevelData.GameObj.Type.WOOD, 1808, 500, 0, blockTextures[0]));
+//        level1Objects.add(new LevelData.GameObj(
+//            LevelData.GameObj.Type.WOOD, 1604, 750, 0, blockTextures[0]));
 
-        // Medium Wood Blocks
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.WOOD, 1436, 313, 90, blockTextures[1]));
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.WOOD, 1826, 313, 90, blockTextures[1]));
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.WOOD, 2216, 313, 90, blockTextures[1]));
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.WOOD, 1678, 571, 90, blockTextures[1]));
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.WOOD, 1974, 571, 90, blockTextures[1]));
-
-        // Medium Stone Blocks
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.STONE, 2048, 196, 0, blockTextures[2]));
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.STONE, 1724, 196, 0, blockTextures[2]));
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.STONE, 1400, 196, 0, blockTextures[2]));
-
+        level1Objects.add(new LevelData.GameObj(
+            LevelData.GameObj.Type.WOOD, 1400, 280, 0, blockTextures[4]));
+        level1Objects.add(new LevelData.GameObj(
+            LevelData.GameObj.Type.WOOD, 1732, 280, 0, blockTextures[4]));
+        level1Objects.add(new LevelData.GameObj(
+            LevelData.GameObj.Type.WOOD, 2060, 280, 0, blockTextures[4]));
+//        // Medium Wood Blocks
+//        level1Objects.add(new LevelData.GameObj(
+//            LevelData.GameObj.Type.WOOD, 1436, 250, 90, blockTextures[1]));
+//        level1Objects.add(new LevelData.GameObj(
+//            LevelData.GameObj.Type.WOOD, 1826, 250, 90, blockTextures[1]));
+//        level1Objects.add(new LevelData.GameObj(
+//            LevelData.GameObj.Type.WOOD, 2216, 250, 90, blockTextures[1]));
+//        level1Objects.add(new LevelData.GameObj(
+//            LevelData.GameObj.Type.WOOD, 1678, 550, 90, blockTextures[1]));
+//        level1Objects.add(new LevelData.GameObj(
+//            LevelData.GameObj.Type.WOOD, 1974, 550, 90, blockTextures[1]));
+//
+//        // Medium Stone Blocks
+//        level1Objects.add(new LevelData.GameObj(
+//            LevelData.GameObj.Type.STONE, 2048, 250, 0, blockTextures[2]));
+//        level1Objects.add(new LevelData.GameObj(
+//            LevelData.GameObj.Type.STONE, 1724, 250, 0, blockTextures[2]));
+//        level1Objects.add(new LevelData.GameObj(
+//            LevelData.GameObj.Type.STONE, 1400, 250, 0, blockTextures[2]));
+//
         // Small Stone Blocks
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.STONE, 1400, 571, 0, blockTextures[3]));
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.STONE, 2132, 571, 0, blockTextures[3]));
+        level1Objects.add(new LevelData.GameObj(
+            LevelData.GameObj.Type.STONE, 1400, 500, 0, blockTextures[2]));
+        level1Objects.add(new LevelData.GameObj(
+            LevelData.GameObj.Type.STONE, 1732, 500, 0, blockTextures[2]));
+        level1Objects.add(new LevelData.GameObj(
+            LevelData.GameObj.Type.STONE, 2060, 500, 0, blockTextures[2]));
 
         // Pigs
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.PIG, 1554, 313, 0, pigTextures[0]));
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.PIG, 1962, 313, 0, pigTextures[0]));
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.PIG, 1758, 829, 0, pigTextures[1]));
+        level1Objects.add(new LevelData.GameObj(
+            LevelData.GameObj.Type.PIG, 1400, 600, 0, pigTextures[0]));
+        level1Objects.add(new LevelData.GameObj(
+            LevelData.GameObj.Type.PIG, 1730, 600, 0, pigTextures[0]));
+        level1Objects.add(new LevelData.GameObj(
+            LevelData.GameObj.Type.PIG, 2060, 600, 0, pigTextures[0]));
 
         // Birds
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.REDBIRD, 170, 360, 0, birdTextures[0]));
+        level1Objects.add(new LevelData.GameObj(
+            LevelData.GameObj.Type.REDBIRD, 170, 360, 0, birdTextures[0]));
 
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.YELLOWBIRD, 100, 200, 0, birdTextures[1]));
+        level1Objects.add(new LevelData.GameObj(
+            LevelData.GameObj.Type.YELLOWBIRD, 100, 200, 0, birdTextures[1]));
 
-        level1Objects.add(new LevelData.GameObject(
-            LevelData.GameObject.Type.BLACKBIRD, 30, 200, 0, birdTextures[2]));
+        level1Objects.add(new LevelData.GameObj(
+            LevelData.GameObj.Type.BLACKBIRD, 30, 200, 0, birdTextures[2]));
 
 
         levels.put(1, new LevelData(1, level1Objects, 1000, 3));
+    }
+
+    private void level2() {
+        ArrayList<LevelData.GameObj> level2Objects = new ArrayList<>();
+
+        level2Objects.add(new LevelData.GameObj(
+            LevelData.GameObj.Type.WOOD, 2048, 196, 0, blockTextures[4]));
+
+        level2Objects.add(new LevelData.GameObj(
+           LevelData.GameObj.Type.STONE, 2048, 360, 0, blockTextures[5]
+        ));
+
+        level2Objects.add(new LevelData.GameObj(
+            LevelData.GameObj.Type.GLASS, 2048, 520, 0, blockTextures[6]
+        ));
+
+        level2Objects.add(new LevelData.GameObj(
+            LevelData.GameObj.Type.PIG, 2048, 680, 0, pigTextures[1]
+        ));
+
+
+        levels.put(2, new LevelData(2, level2Objects, 1000, 3));
+
+    }
+    private void initializeLevels() {
+        level1();
+        level2();
     }
 
     public LevelData getLevel(int levelNumber) {

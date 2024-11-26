@@ -1,36 +1,49 @@
 package io.github.AngryBirds;
 
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Action;
 
 public class ProjectileAction extends Action {
-    private float velocityX;
-    private float velocityY;
-    private float gravity = -5f; // Adjusted gravity for slower descent
-    private float time = 0f;
+    private float velocityX, velocityY;
+    private float gravity;
+    private float time;
+    private boolean finished;
+    private Vector2 initialPosition;
 
-    public ProjectileAction(float velocityX, float velocityY) {
+    public ProjectileAction(float velocityX, float velocityY, float gravity) {
         this.velocityX = velocityX;
         this.velocityY = velocityY;
+        this.gravity = gravity;
+        this.time = 0;
+        this.finished = false;
     }
 
     @Override
     public boolean act(float delta) {
+        if (finished) return true;
+
         time += delta;
 
-        // Adjust the scaling factor to slow down the movement
-        float newX = actor.getX() + velocityX * delta * 15;  // Slower horizontal motion
-        float newY = actor.getY() + velocityY * delta * 15 + 0.5f * gravity * (delta * 15) * (delta * 15); // Slower vertical motion
+        // Calculate new position based on time, velocity, and gravity
+        float dx = velocityX * time;
+        float dy = velocityY * time - 0.5f * gravity * time * time;
 
-        // Update vertical velocity due to gravity
-        velocityY += gravity * delta * 15;
+        if (initialPosition == null) {
+            initialPosition = new Vector2(actor.getX(), actor.getY());
+        }
 
+        float newX = initialPosition.x + dx;
+        float newY = initialPosition.y + dy;
+
+        // Set the new position of the actor
         actor.setPosition(newX, newY);
 
-        // Stop action if the actor goes below the ground level (0 Y position)
-        if (newY <= 0) {
-            actor.setPosition(newX, 0);
-            return true; // Action is finished
+        // Check if the actor has hit the ground or left the screen
+        if (newY <= 0 || newX < 0 || newX > 2560) {
+            finished = true;
+            return true; // End the action
         }
+
         return false; // Continue the action
     }
 }
