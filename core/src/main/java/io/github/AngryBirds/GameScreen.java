@@ -139,17 +139,14 @@ public class GameScreen implements Screen {
         redImage = redBird.getImage();
         redImage.setPosition(catapultX, catapultY);
         redImage.setSize(redImage.getWidth()*2 , redImage.getHeight() *2);
-        System.out.println("Red bird added at catapult position: " + catapultX + ", " + catapultY);
 
         yellowImage = yellowBird.getImage();
         //yellowImage.setPosition(0, 0);
         yellowImage.setSize(yellowImage.getWidth() , yellowImage.getHeight() );
-        System.out.println("Yellow bird added off-screen at: -100, -100");
 
         blackImage = blackBird.getImage();
         //blackImage.setPosition(50, 200);
         blackImage.setSize(blackImage.getWidth() , blackImage.getHeight() );
-        System.out.println("Black bird added off-screen at: -100, -100");
 
         // Add birds to lists and stage
         birds = new Image[]{redImage, yellowImage, blackImage};
@@ -157,12 +154,10 @@ public class GameScreen implements Screen {
 
         for (int i = 0; i < birds.length; i++) {
             stage.addActor(birds[i]);
-            System.out.println("Bird " + i + " added to stage.");
             enableDragAndDrop(birds[i], i);
 
             // Add to collision manager
             collisionManager.addGameObject(birdObjects.get(i));
-            System.out.println("Bird " + i + " added to collision manager.");
         }
     }
 
