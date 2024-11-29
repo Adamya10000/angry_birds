@@ -64,7 +64,10 @@ public class PauseMenu implements Screen {
 
         saveImage.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-
+//                SaveGame state = gameScreen.getCurrentSaveGame(); // Assuming you passed gameScreen to PauseMenu
+//                gameScreen.saveGameStateToFile(state);
+//                System.out.println("File path: " + Gdx.files.local("saveGameState.json").file().getAbsolutePath());
+//                System.out.println("Game state saved!");
             }
         });
 
@@ -74,7 +77,8 @@ public class PauseMenu implements Screen {
 
         resume.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new GameScreen(game, level));
+//                dispose();
+                game.setScreen(gameScreen);
             }
         });
 

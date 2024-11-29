@@ -69,7 +69,7 @@ public class LevelsScreen implements Screen {
 
         Image level2 = new Image(level);
         level2.setSize(80, 75);
-        level2.setPosition(260, 510);
+        level2.setPosition(230, 510);
         level2.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 game.setScreen(new GameScreen(game,2));
@@ -78,7 +78,7 @@ public class LevelsScreen implements Screen {
 
         Image level3 = new Image(level);
         level3.setSize(80, 75);
-        level3.setPosition(460, 510);
+        level3.setPosition(390, 510);
         level3.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 game.setScreen(new GameScreen(game,3));

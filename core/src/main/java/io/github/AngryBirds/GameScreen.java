@@ -349,8 +349,13 @@ public class GameScreen implements Screen {
         }
     }
 
+    private boolean isInitialized = false;
     @Override
     public void show() {
+        Gdx.input.setInputProcessor(stage);
+        if(isInitialized) return;
+        isInitialized = true;
+
         shapeRenderer = new ShapeRenderer();
         shapeRenderer.setProjectionMatrix(stage.getCamera().combined);
         loadTextures();
@@ -407,19 +412,33 @@ public class GameScreen implements Screen {
         checkLevelCompletion();
     }
 
+    private boolean winScreenDisplayed = false;
+    private boolean loseScreenDisplayed = false;
     private void checkLevelCompletion() {
+        // Check if all birds have been launched
         boolean allPigsDestroyed = pigArrayList.stream().allMatch(pig -> pig.isDestroyed());
-        if ((currentBirdIndex >= birdObjects.size()) || (allPigsDestroyed)) {
+        boolean allBirdsLaunched = currentBirdIndex >= birdObjects.size();
+
+        if(allBirdsLaunched){
             Timer.schedule(new Timer.Task() {
                 @Override
                 public void run() {
-                    if (allPigsDestroyed) {
-                        game.setScreen(new WinScreen(game, viewport, camera, gameScreen, currentLevel));
-                    } else {
+                    if(!allPigsDestroyed && !winScreenDisplayed && !loseScreenDisplayed){
+                        loseScreenDisplayed = true;
                         game.setScreen(new LoseScreen(game, viewport, camera, gameScreen, currentLevel));
                     }
                 }
             }, 4f);
+        }
+
+        if(allPigsDestroyed){
+            winScreenDisplayed = true;
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    game.setScreen(new WinScreen(game, viewport, camera, gameScreen, currentLevel));
+                }
+            }, 2f);
         }
     }
 
@@ -567,5 +586,92 @@ public class GameScreen implements Screen {
         shapeRenderer.dispose();
 
     }
+
+//    public SaveGame getCurrentSaveGame() {
+//        SaveGame state = new SaveGame();
+//        state.currentLevel = currentLevel;
+//
+//        // Save birds
+//        state.birds = new ArrayList<>();
+//        for (Bird bird : birdArrayList) {
+//            if(!bird.isLaunched()){
+//                SaveGame.BirdState birdState = new SaveGame.BirdState();
+//                birdState.x = bird.getBody().getPosition().x * PhysicsManager.BOX_TO_WORLD;
+//                birdState.y = bird.getBody().getPosition().y * PhysicsManager.BOX_TO_WORLD;
+//                birdState.isLaunched = bird.isLaunched();
+//                state.birds.add(birdState);
+//            }
+//        }
+//
+//        // Save blocks
+//        state.blocks = new ArrayList<>();
+//        for (Block block : blockArrayList) {
+//            SaveGame.BlockState blockState = new SaveGame.BlockState();
+//            blockState.x = block.getBody().getPosition().x * PhysicsManager.BOX_TO_WORLD;
+//            blockState.y = block.getBody().getPosition().y * PhysicsManager.BOX_TO_WORLD;
+//            blockState.rotation = block.getBody().getAngle();
+//            if ((GameObject) block instanceof Wood){
+//                blockState.type = "WOOD";
+//            } else if((GameObject) block instanceof Stone){
+//                blockState.type = "STONE";
+//            } else if ((GameObject) block instanceof Glass) {
+//                blockState.type = "GLASS";
+//            }
+//            state.blocks.add(blockState);
+//        }
+//
+//        // Save pigs
+//        state.pigs = new ArrayList<>();
+//        for (Pig pig : pigArrayList) {
+//            SaveGame.PigState pigState = new SaveGame.PigState();
+//            pigState.x = pig.getBody().getPosition().x * PhysicsManager.BOX_TO_WORLD;
+//            pigState.y = pig.getBody().getPosition().y * PhysicsManager.BOX_TO_WORLD;
+//            pigState.isDestroyed = pig.isDestroyed();
+//            state.pigs.add(pigState);
+//        }
+//
+//        return state;
+//    }
+//
+//    public void saveGameStateToFile(SaveGame state) {
+//        com.badlogic.gdx.utils.Json json = new com.badlogic.gdx.utils.Json();
+//        String jsonString = json.toJson(state);
+//
+//        // Save to a file
+//        if(currentLevel == 1){
+//            FileHandle file = Gdx.files.local("saveGameState1.json");
+//            file.writeString(jsonString, false);
+//        } else if (currentLevel == 2) {
+//            FileHandle file = Gdx.files.local("saveGameState2.json");
+//            file.writeString(jsonString, false);
+//        } else {
+//            FileHandle file = Gdx.files.local("saveGameState3.json");
+//            file.writeString(jsonString, false);
+//        }
+//    }
+//
+//    public SaveGame loadSavedGameFromFile() {
+//        FileHandle file;
+//        if(currentLevel == 1){
+//            file = Gdx.files.local("saveGameState1.json");
+//        } else if (currentLevel == 2) {
+//            file = Gdx.files.local("saveGameState2.json");
+//        } else {
+//            file = Gdx.files.local("saveGameState3.json");
+//        }
+//
+//        // Check if the save file exists
+//        if (file.length() == 0) {
+//            System.out.println("No saved game found!");
+//            return null; // Handle gracefully
+//        }
+//
+//        // Read the JSON file
+//        String jsonString = file.readString();
+//
+//        // Deserialize into GameState
+//        com.badlogic.gdx.utils.Json json = new com.badlogic.gdx.utils.Json();
+//        return json.fromJson(SaveGame.class, jsonString);
+//    }
 
 }
