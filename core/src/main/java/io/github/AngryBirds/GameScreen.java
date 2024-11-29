@@ -69,6 +69,8 @@ public class GameScreen implements Screen {
     private ArrayList<Block> blockArrayList;
     private ArrayList<Pig> pigArrayList;
 
+    private int pigCount = 0;
+
     public GameScreen(Main game, int level) {
         this.game = game;
         this.currentLevel = level;
@@ -325,6 +327,7 @@ public class GameScreen implements Screen {
                     blockArrayList.add((Block) gameObject);
                     break;
                 case PIG:
+                    pigCount++;
                     gameObject = new Pig(obj.getTexture(), physicsManager, obj.getX(), obj.getY(), stage, collisionManager);
                     pigArrayList.add((Pig) gameObject);
                     Image objectImage = gameObject.getImage();
@@ -424,6 +427,31 @@ public class GameScreen implements Screen {
             pig.safeRemoveFromPhysicsWorld();
         }
 
+        checkLevelCompletion();
+    }
+
+    private void checkLevelCompletion() {
+        // Check if all birds have been launched
+        if (currentBirdIndex >= birdObjects.size()) {
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    // Check if all pigs have been destroyed
+                    boolean allPigsDestroyed = pigArrayList.stream()
+                        .allMatch(pig -> pig.isDestroyed());
+
+                    if (allPigsDestroyed) {
+                        //System.out.println("lose");
+                        // Transition to win screen
+                    } else {
+                        //game.setScreen(new WinScreen(game));
+
+                        // Optional: Transition to fail screen or restart level
+                        //game.setScreen(new FailScreen(game, currentLevel));
+                    }
+                }
+            }, 5f); // 5 seconds delay
+        }
     }
 
     private void drawProjectileTrajectory(Vector2 dragVector, Vector2 startPoint) {

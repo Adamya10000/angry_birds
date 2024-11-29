@@ -79,16 +79,8 @@ public class Pig implements GameObject {
         destroyed = true;
         collisionManager.removeFromGameObject(obj);
         // Remove from physics world
-        if (pigBody != null) {
-            pigBody.setActive(false);
-            // Optional: remove the body from the world if needed
-            //physicsManager.world.destroyBody(pigBody);
-        }
-
-        // Remove image from stage
-        if (pigImage != null && stage != null) {
-            pigImage.remove();
-        }
+        markedForRemoval = true; // Mark for safe removal
+        safeRemoveFromPhysicsWorld();
     }
 
     @Override
