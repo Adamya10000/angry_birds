@@ -13,7 +13,7 @@ public class Pig implements GameObject {
     private float health;
     private boolean destroyed;
     private PhysicsManager physicsManager;
-    private static final float MAX_HEALTH = 100f;
+    private static final float MAX_HEALTH = 1f;
     private static final float PIG_MASS = 10f;
     private Stage stage;
     private Box2DCollisionManager collisionManager;
@@ -74,13 +74,13 @@ public class Pig implements GameObject {
 
     @Override
     public void removeFromGame(GameObject obj) {
+
         if (destroyed) return;
 
         destroyed = true;
         collisionManager.removeFromGameObject(obj);
         // Remove from physics world
         markedForRemoval = true; // Mark for safe removal
-        safeRemoveFromPhysicsWorld();
     }
 
     @Override

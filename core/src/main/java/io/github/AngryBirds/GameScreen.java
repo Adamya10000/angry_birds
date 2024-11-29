@@ -118,15 +118,17 @@ public class GameScreen implements Screen {
         Image pause = new Image(pauseButton);
         pause.setSize(180, 160);
         pause.setPosition(0, VIRTUAL_HEIGHT - pause.getHeight());
+        GameScreen save = this;
         pause.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new PauseMenu(game, viewport, camera, gameScreen, currentLevel));
+                game.setScreen(new PauseMenu(game, viewport, camera, gameScreen, currentLevel, save));
             }
         });
 
         stage.addActor(mainscreen);
         stage.addActor(pause);
     }
+
 
     private void setupCatapult() {
         Catapult catapult = new Catapult();
@@ -148,7 +150,7 @@ public class GameScreen implements Screen {
         birdArrayList.add(redBird);
         birdArrayList.add(yellowBird);
         birdArrayList.add(blackBird);
-            // Position birds initially off-screen, only the first bird is on the catapult
+        // Position birds initially off-screen, only the first bird is on the catapult
         redImage = redBird.getImage();
         redImage.setPosition(catapultX, catapultY);
         redImage.setSize(redImage.getWidth()*2 , redImage.getHeight() *2);
@@ -177,9 +179,9 @@ public class GameScreen implements Screen {
 
 
     // Create Bird objects specific to Box2D
-        //    Bird redBird = new Bird(red, Bird.BirdType.RED, physicsManager, catapultX, catapultY);
-        //    Bird yellowBird = new Bird(yellow, Bird.BirdType.YELLOW, physicsManager, -100, -100);
-        //    Bird blackBird = new Bird(black, Bird.BirdType.BLACK, physicsManager, -100, -100);
+    //    Bird redBird = new Bird(red, Bird.BirdType.RED, physicsManager, catapultX, catapultY);
+    //    Bird yellowBird = new Bird(yellow, Bird.BirdType.YELLOW, physicsManager, -100, -100);
+    //    Bird blackBird = new Bird(black, Bird.BirdType.BLACK, physicsManager, -100, -100);
 
     private void enableDragAndDrop(Image birdImage, int birdIndex) {
         birdImage.addListener(new InputListener() {
@@ -381,8 +383,8 @@ public class GameScreen implements Screen {
             buildLevel(currentLevelData);
             setupBirds();
         }
-        if(currentLevel != 3){
-            physicsManager.setWorldGravity(new Vector2(0, -7f));
+        if(currentLevel == 3){
+            physicsManager.setWorldGravity(new Vector2(0, 0f));
         }
 
     }
@@ -404,7 +406,6 @@ public class GameScreen implements Screen {
 
         // Update object positions based on physics bodies
         updateObjectPositions();
-
 
         // Draw stage
         stage.draw();
@@ -432,25 +433,23 @@ public class GameScreen implements Screen {
 
     private void checkLevelCompletion() {
         // Check if all birds have been launched
-        if (currentBirdIndex >= birdObjects.size()) {
+        boolean allPigsDestroyed = pigArrayList.stream().allMatch(pig -> pig.isDestroyed());
+        if ((currentBirdIndex >= birdObjects.size()) || (allPigsDestroyed)) {
             Timer.schedule(new Timer.Task() {
                 @Override
                 public void run() {
                     // Check if all pigs have been destroyed
-                    boolean allPigsDestroyed = pigArrayList.stream()
-                        .allMatch(pig -> pig.isDestroyed());
 
                     if (allPigsDestroyed) {
-                        //System.out.println("lose");
+                        game.setScreen(new WinScreen(game, viewport, camera, gameScreen, currentLevel));
                         // Transition to win screen
                     } else {
-                        //game.setScreen(new WinScreen(game));
-
+                        game.setScreen(new LoseScreen(game, viewport, camera, gameScreen, currentLevel));
                         // Optional: Transition to fail screen or restart level
                         //game.setScreen(new FailScreen(game, currentLevel));
                     }
                 }
-            }, 5f); // 5 seconds delay
+            }, 3f); // 5 seconds delay
         }
     }
 
@@ -576,7 +575,8 @@ public class GameScreen implements Screen {
     }
 
     @Override
-    public void pause() {}
+    public void pause() {
+    }
 
     @Override
     public void resume() {}
@@ -598,4 +598,5 @@ public class GameScreen implements Screen {
         shapeRenderer.dispose();
 
     }
+
 }

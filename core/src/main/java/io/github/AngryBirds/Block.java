@@ -28,7 +28,7 @@ public class Block implements GameObject {
         // Set image rotation to match body rotation
         this.blockImage.setRotation(rotation);
 
-        this.health = maxHealth;
+        this.health = 1f;
         this.damage = damage;
         this.mass = mass;
         this.destroyed = false;

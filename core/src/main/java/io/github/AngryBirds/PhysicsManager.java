@@ -18,7 +18,7 @@ public class PhysicsManager {
     private SpriteBatch batch;
 
     public PhysicsManager() {
-        Vector2 gravity = new Vector2(0, -0f);
+        Vector2 gravity = new Vector2(0, -7f);
         world = new World(gravity, true);
 
         debugRenderer = new Box2DDebugRenderer();

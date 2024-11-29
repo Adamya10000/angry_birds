@@ -13,7 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-public class PauseMenu implements Screen {
+public class LoseScreen implements Screen {
     private Main game;
     private OrthographicCamera camera;
     private Viewport viewport;
@@ -26,9 +26,9 @@ public class PauseMenu implements Screen {
     private Texture resumeButton;
     private Texture saveButton;
     private int level;
-    private GameScreen gameScreen;
+    private Texture text;
 
-    public PauseMenu(Main game, Viewport viewport, OrthographicCamera camera, Texture gameScreenTexture, int level, GameScreen gamescreen) {
+    public LoseScreen(Main game, Viewport viewport, OrthographicCamera camera, Texture gameScreenTexture, int level) {
         this.viewport = viewport;
         this.camera = camera;
         this.game = game;
@@ -38,7 +38,6 @@ public class PauseMenu implements Screen {
         this.stage = new Stage(viewport);
         this.level = level;
         Gdx.input.setInputProcessor(stage);
-        this.gameScreen = gamescreen;
     }
 
     @Override
@@ -47,6 +46,10 @@ public class PauseMenu implements Screen {
         backButton = new Texture("back.png");
         resumeButton = new Texture("resume.png");
         saveButton = new Texture("save.png");
+        text = new Texture("levelFailedText.png");
+
+        Image fail = new Image(text);
+        fail.setPosition(60, Gdx.graphics.getHeight() - 300);
 
         Image restartImage = new Image(restartButton);
         restartImage.setSize(200, 190);
@@ -68,15 +71,6 @@ public class PauseMenu implements Screen {
             }
         });
 
-        Image resume = new Image(resumeButton);
-        resume.setSize(200, 190);
-        resume.setPosition(750, 600);
-
-        resume.addListener(new ClickListener() {
-            public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new GameScreen(game, level));
-            }
-        });
 
         Image back = new Image(backButton);
         back.setColor(1, 1, 1, 1);
@@ -90,9 +84,9 @@ public class PauseMenu implements Screen {
 
 
         stage.addActor(restartImage);
-        stage.addActor(saveImage);
+        //stage.addActor(saveImage);
         stage.addActor(back);
-        stage.addActor(resume);
+        stage.addActor(fail);
     }
 
     @Override
@@ -113,7 +107,7 @@ public class PauseMenu implements Screen {
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(0.4431f, 0.1f, 0.9706f, 1);
+        shapeRenderer.setColor(0, 0, 0, 1);
         shapeRenderer.rect(0, 0, (float) Gdx.graphics.getWidth() / 3, Gdx.graphics.getHeight());
         shapeRenderer.end();
 
