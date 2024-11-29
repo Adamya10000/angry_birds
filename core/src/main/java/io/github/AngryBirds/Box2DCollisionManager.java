@@ -25,6 +25,8 @@ public class Box2DCollisionManager implements ContactListener {
         // Calculate impact force
         float impactForce = calculateImpactForce(contact);
 
+        //System.out.println(impactForce);
+
         // Handle collision between objects
         handleCollision(fixtureA, fixtureB, impactForce);
     }
@@ -74,47 +76,90 @@ public class Box2DCollisionManager implements ContactListener {
         Body bodyA = fixtureA.getBody();
         Body bodyB = fixtureB.getBody();
 
+        // Check for ground collision
+        if (isGroundCollision(bodyA, bodyB)) {
+            handleGroundCollision(bodyA, bodyB, impactForce);
+            return;
+        }
+
         // Attempt to find corresponding game objects
         GameObject objA = findGameObject(bodyA);
         GameObject objB = findGameObject(bodyB);
 
         // Apply damage to objects
         if (objA != null) {
-            objA.takeDamage(impactForce);
+            objA.takeDamage(impactForce, objA);
         }
         if (objB != null) {
-            objB.takeDamage(impactForce);
+            objB.takeDamage(impactForce, objB);
         }
 
         // Special collision handling
         if ((objA instanceof Bird && objB instanceof Pig) ||
-                (objA instanceof Pig && objB instanceof Bird)) {
+            (objA instanceof Pig && objB instanceof Bird)) {
             handleBirdPigCollision(objA, objB, impactForce);
         }
     }
 
+    private boolean isGroundCollision(Body bodyA, Body bodyB) {
+        // Assuming the ground body is a static body created in PhysicsManager
+        // You might need to adjust this based on how your ground is specifically implemented
+        return (bodyA.getType() == BodyDef.BodyType.StaticBody && bodyA.getUserData() == "ground") ||
+            (bodyB.getType() == BodyDef.BodyType.StaticBody && bodyB.getUserData() == "ground");
+    }
+
+    private void handleGroundCollision(Body impactBody, Body groundBody, float impactForce) {
+        GameObject impactObject = findGameObject(impactBody);
+
+        if (impactObject != null) {
+            // Calculate ground impact damage
+            float groundImpactDamage = calculateGroundImpactDamage(impactForce);
+
+            // Apply damage to the object
+            impactObject.takeDamage(groundImpactDamage, impactObject);
+
+            // Optional: Add logging or additional ground impact logic
+            System.out.println("Object impacted ground with force: " + impactForce +
+                ", Damage dealt: " + groundImpactDamage);
+        }
+    }
+
+    private float calculateGroundImpactDamage(float impactForce) {
+        // Implement a damage calculation based on impact force
+        // You can adjust this formula as needed
+        float baseDamage = 20f; // Base damage for ground impact
+        float damageMultiplier = 0.1f; // Scaling factor for impact force
+
+        // Calculate damage, ensuring it doesn't go below 0
+        return Math.max(0, baseDamage + (impactForce * damageMultiplier));
+    }
+
+
     private void handleBirdPigCollision(GameObject obj1, GameObject obj2, float impactForce) {
         // Determine which is the bird and which is the pig
-        Bird bird = (obj1 instanceof Bird) ? (Bird)obj1 : (Bird)obj2;
-        Pig pig = (obj1 instanceof Pig) ? (Pig)obj1 : (Pig)obj2;
+        System.out.println("Entered Pig BIrd Collision");
+        GameObject bird = (obj1 instanceof Bird) ? obj1 : obj2;
+        GameObject pig = (obj1 instanceof Pig) ? obj1 : obj2;
 
         // More nuanced damage calculation
         float damageFactor = Math.max(0, Math.min(impactForce / 100f, 1f));
-        pig.takeDamage(damageFactor * 100);  // Scale damage between 0-100
+        pig.takeDamage(damageFactor * 100, pig);
+        bird.takeDamage(damageFactor * 100, bird);// Scale damage between 0-100
     }
 
     private GameObject findGameObject(Body body) {
-        // Search through game objects to find matching body
         for (GameObject obj : gameObjects) {
-            if (obj instanceof Bird && ((Bird)obj).getBody() == body) {
+            if (obj.getBody() == body) {
                 return obj;
             }
-            // Add similar checks for other game object types
-            // This might need to be expanded based on your specific implementation
         }
         return null;
     }
 
+
+    public void removeFromGameObject (GameObject gameObject){
+        gameObjects.remove(gameObject);
+    }
 
     public void addGameObject(GameObject gameObject) {
         gameObjects.add(gameObject);
@@ -122,5 +167,9 @@ public class Box2DCollisionManager implements ContactListener {
 
     public void clearGameObjects() {
         gameObjects.clear();
+    }
+
+    public List<GameObject> getGameObjects() {
+        return gameObjects;
     }
 }

@@ -41,7 +41,7 @@ public class PhysicsManager {
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = groundShape;
-        fixtureDef.friction = 0.8f;
+        fixtureDef.friction = 1.2f;
         fixtureDef.restitution = 0.1f;
 
         groundBody.createFixture(fixtureDef);
@@ -66,7 +66,7 @@ public class PhysicsManager {
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
         fixtureDef.density = 1.0f;
-        fixtureDef.friction = 0.7f;
+        fixtureDef.friction = 1.2f;
         fixtureDef.restitution = 0.3f;
 
         // Create fixture
@@ -97,7 +97,7 @@ public class PhysicsManager {
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
         fixtureDef.density = 1.0f;
-        fixtureDef.friction = 0.3f;
+        fixtureDef.friction = 1.2f;
         fixtureDef.restitution = 0.5f;
 
         // Create fixture

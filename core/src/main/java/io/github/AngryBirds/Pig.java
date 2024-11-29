@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 public class Pig implements GameObject {
@@ -14,29 +15,35 @@ public class Pig implements GameObject {
     private PhysicsManager physicsManager;
     private static final float MAX_HEALTH = 100f;
     private static final float PIG_MASS = 10f;
+    private Stage stage;
+    private Box2DCollisionManager collisionManager;
+    private boolean markedForRemoval = false;
+    private float damage;
 
-    public Pig(TextureRegion texture, PhysicsManager physicsManager, float x, float y) {
+
+    public Pig(TextureRegion texture, PhysicsManager physicsManager, float x, float y, Stage stage, Box2DCollisionManager collisionManager) {
         this.pigImage = new Image(texture);
         this.health = MAX_HEALTH;
         this.destroyed = false;
         this.physicsManager = physicsManager;
-
+        this.stage = stage;
+        this.damage = 10f;
         // Create body using PhysicsManager method
         float pigWidth = pigImage.getWidth();
         float pigHeight = pigImage.getHeight();
         pigBody = physicsManager.createPigBody(x, y, pigWidth/2, pigHeight/2);
+        this.collisionManager = collisionManager;
     }
 
     @Override
-    public void takeDamage(float impactForce) {
+    public void takeDamage(float impactForce, GameObject obj) {
         // Damage calculation based on impact force
         float damage = impactForce * 0.5f; // Adjust multiplier as needed
         health -= damage;
+        System.out.println("Remaining health of PIG: " + health);
 
         if (health <= 0) {
-            destroyed = true;
-            pigBody.setActive(false);
-            pigImage.remove(); // Remove from stage
+            removeFromGame(obj); // Remove from stage
         }
     }
 
@@ -63,5 +70,40 @@ public class Pig implements GameObject {
     @Override
     public Body getBody() {
         return pigBody;
+    }
+
+    @Override
+    public void removeFromGame(GameObject obj) {
+        if (destroyed) return;
+
+        destroyed = true;
+        collisionManager.removeFromGameObject(obj);
+        // Remove from physics world
+        if (pigBody != null) {
+            pigBody.setActive(false);
+            // Optional: remove the body from the world if needed
+            //physicsManager.world.destroyBody(pigBody);
+        }
+
+        // Remove image from stage
+        if (pigImage != null && stage != null) {
+            pigImage.remove();
+        }
+    }
+
+    @Override
+    public void safeRemoveFromPhysicsWorld() {
+        if (!markedForRemoval) return;
+
+        if (pigBody != null) {
+            pigBody.setActive(false);
+        }
+
+        // Remove image from stage
+        pigImage.remove();
+    }
+
+    public float getDamage() {
+        return damage;
     }
 }

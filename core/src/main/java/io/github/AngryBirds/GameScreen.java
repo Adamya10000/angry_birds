@@ -63,6 +63,12 @@ public class GameScreen implements Screen {
     private int currentBirdIndex = 0; // Tracks the currently active bird
     private Image redImage, yellowImage, blackImage;
 
+    //Lists of objects
+    private Bird redBird, yellowBird, blackBird;
+    private ArrayList<Bird> birdArrayList;
+    private ArrayList<Block> blockArrayList;
+    private ArrayList<Pig> pigArrayList;
+
     public GameScreen(Main game, int level) {
         this.game = game;
         this.currentLevel = level;
@@ -73,7 +79,9 @@ public class GameScreen implements Screen {
         // Initialize Physics Managers
         this.physicsManager = new PhysicsManager();
         this.collisionManager = new Box2DCollisionManager(physicsManager.world);
-
+        this.birdArrayList = new ArrayList<>();
+        this.blockArrayList = new ArrayList<>();
+        this.pigArrayList = new ArrayList<>();
         Gdx.input.setInputProcessor(stage);
     }
 
@@ -131,11 +139,14 @@ public class GameScreen implements Screen {
 
     private void setupBirds() {
         // Create Bird objects with their respective types
-        Bird redBird = new Bird(red, Bird.BirdType.RED, physicsManager, catapultX, catapultY);
-        Bird yellowBird = new Bird(yellow, Bird.BirdType.YELLOW, physicsManager, 150, 220);
-        Bird blackBird = new Bird(black, Bird.BirdType.BLACK, physicsManager, 60, 220);
+        redBird = new Bird(red, Bird.BirdType.RED, physicsManager, catapultX, catapultY, stage,collisionManager);
+        yellowBird = new Bird(yellow, Bird.BirdType.YELLOW, physicsManager, 150, 220, stage, collisionManager);
+        blackBird = new Bird(black, Bird.BirdType.BLACK, physicsManager, 60, 220, stage, collisionManager);
 
-        // Position birds initially off-screen, only the first bird is on the catapult
+        birdArrayList.add(redBird);
+        birdArrayList.add(yellowBird);
+        birdArrayList.add(blackBird);
+            // Position birds initially off-screen, only the first bird is on the catapult
         redImage = redBird.getImage();
         redImage.setPosition(catapultX, catapultY);
         redImage.setSize(redImage.getWidth()*2 , redImage.getHeight() *2);
@@ -158,6 +169,7 @@ public class GameScreen implements Screen {
 
             // Add to collision manager
             collisionManager.addGameObject(birdObjects.get(i));
+            //System.out.println(" Bird : " + collisionManager.getGameObjects().size());
         }
     }
 
@@ -301,23 +313,26 @@ public class GameScreen implements Screen {
 
             switch (obj.getType()) {
                 case WOOD:
-                    gameObject = new Wood(obj.getTexture(), physicsManager, obj.getX(), obj.getY(), obj.getRotation());
+                    gameObject = new Wood(obj.getTexture(), physicsManager, obj.getX(), obj.getY(), obj.getRotation(), stage, collisionManager);
+                    blockArrayList.add((Block) gameObject);
                     break;
                 case STONE:
-                    gameObject = new Stone(obj.getTexture(), physicsManager, obj.getX(), obj.getY(), obj.getRotation());
+                    gameObject = new Stone(obj.getTexture(), physicsManager, obj.getX(), obj.getY(), obj.getRotation(), stage, collisionManager);
+                    blockArrayList.add((Block) gameObject);
                     break;
                 case GLASS:
-                    gameObject = new Glass(obj.getTexture(), physicsManager, obj.getX(), obj.getY(), obj.getRotation());
+                    gameObject = new Glass(obj.getTexture(), physicsManager, obj.getX(), obj.getY(), obj.getRotation(), stage, collisionManager);
+                    blockArrayList.add((Block) gameObject);
                     break;
                 case PIG:
-                    gameObject = new Pig(obj.getTexture(), physicsManager, obj.getX(), obj.getY());
+                    gameObject = new Pig(obj.getTexture(), physicsManager, obj.getX(), obj.getY(), stage, collisionManager);
+                    pigArrayList.add((Pig) gameObject);
                     Image objectImage = gameObject.getImage();
                     objectImage.setSize(objectImage.getWidth() / 2, objectImage.getHeight() / 2);
                     break;
                 case REDBIRD:
                 case YELLOWBIRD:
                 case BLACKBIRD:
-                    // Skip bird creation here as it's handled in setupBirds()
                     continue;
                 default:
                     continue;
@@ -337,7 +352,6 @@ public class GameScreen implements Screen {
                 objectImage.setRotation(obj.getRotation());
                 stage.addActor(objectImage);
 
-                // Add to game objects list and collision manager
                 levelGameObjects.add(gameObject);
                 collisionManager.addGameObject(gameObject);
             }
@@ -367,6 +381,7 @@ public class GameScreen implements Screen {
         if(currentLevel != 3){
             physicsManager.setWorldGravity(new Vector2(0, -7f));
         }
+
     }
 
     @Override
@@ -396,6 +411,19 @@ public class GameScreen implements Screen {
             shapeRenderer.setProjectionMatrix(stage.getCamera().combined);
             drawProjectileTrajectory(currentDragVector, startPoint);
         }
+
+        for(Bird bird : birdArrayList){
+            bird.safeRemoveFromPhysicsWorld();
+        }
+
+        for(Block block : blockArrayList){
+            block.safeRemoveFromPhysicsWorld();
+        }
+
+        for(Pig pig : pigArrayList){
+            pig.safeRemoveFromPhysicsWorld();
+        }
+
     }
 
     private void drawProjectileTrajectory(Vector2 dragVector, Vector2 startPoint) {
