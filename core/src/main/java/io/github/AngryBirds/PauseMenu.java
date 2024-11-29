@@ -27,6 +27,7 @@ public class PauseMenu implements Screen {
     private Texture saveButton;
     private int level;
     private GameScreen gameScreen;
+    private SaveGame state;
 
     public PauseMenu(Main game, Viewport viewport, OrthographicCamera camera, Texture gameScreenTexture, int level, GameScreen gamescreen) {
         this.viewport = viewport;
@@ -64,10 +65,10 @@ public class PauseMenu implements Screen {
 
         saveImage.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-//                SaveGame state = gameScreen.getCurrentSaveGame(); // Assuming you passed gameScreen to PauseMenu
-//                gameScreen.saveGameStateToFile(state);
-//                System.out.println("File path: " + Gdx.files.local("saveGameState.json").file().getAbsolutePath());
-//                System.out.println("Game state saved!");
+                state = gameScreen.getCurrentSaveGame(); // Assuming you passed gameScreen to PauseMenu
+                gameScreen.saveGameStateToFile(state);
+                System.out.println("File path: " + Gdx.files.local("saveGameState.dat").file().getAbsolutePath());
+                System.out.println("Game state saved!");
             }
         });
 

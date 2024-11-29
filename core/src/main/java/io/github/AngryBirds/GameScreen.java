@@ -2,6 +2,7 @@ package io.github.AngryBirds;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -20,6 +21,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.utils.Timer;
 
 
+import java.io.ObjectOutputStream;
 import java.util.*;
 
 import static io.github.AngryBirds.PhysicsManager.WORLD_TO_BOX;
@@ -68,7 +70,7 @@ public class GameScreen implements Screen {
     private ArrayList<Bird> birdArrayList;
     private ArrayList<Block> blockArrayList;
     private ArrayList<Pig> pigArrayList;
-
+    private boolean isLoaded = false;
 
     public GameScreen(Main game, int level) {
         this.game = game;
@@ -84,6 +86,24 @@ public class GameScreen implements Screen {
         this.blockArrayList = new ArrayList<>();
         this.pigArrayList = new ArrayList<>();
         Gdx.input.setInputProcessor(stage);
+    }
+
+    public GameScreen(Main game, int level, boolean isLoaded, SaveGame saveGame) {
+        this.game = game;
+        this.currentLevel = level;
+        this.isLoaded = isLoaded;
+        this.camera = new OrthographicCamera();
+        this.viewport = new StretchViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, camera);
+        this.stage = new Stage(viewport);
+        // Initialize Physics Managers
+        this.physicsManager = new PhysicsManager();
+        this.collisionManager = new Box2DCollisionManager(physicsManager.world);
+        this.birdArrayList = new ArrayList<>();
+        this.blockArrayList = new ArrayList<>();
+        this.pigArrayList = new ArrayList<>();
+        Gdx.input.setInputProcessor(stage);
+        buildLoadedLevel(saveGame); // Build blocks and pigs
+        setUpLoadedBirds(saveGame);
     }
 
     private void loadTextures() {
@@ -169,6 +189,31 @@ public class GameScreen implements Screen {
             collisionManager.addGameObject(birdObjects.get(i));
         }
     }
+
+    private void setUpLoadedBirds(SaveGame saveGame) {
+        birdArrayList.clear();
+        currentBirdIndex = 0;
+        int i = 0;
+
+        for (SaveGame.BirdState birdState : saveGame.birds) {
+            Bird bird = null;
+            if ("RED".equals(birdState.type)) {
+                bird = new Bird(red, Bird.BirdType.RED, physicsManager, birdState.x, birdState.y, collisionManager);
+            } else if ("YELLOW".equals(birdState.type)) {
+                bird = new Bird(yellow, Bird.BirdType.YELLOW, physicsManager, birdState.x, birdState.y, collisionManager);
+            } else if ("BLACK".equals(birdState.type)) {
+                bird = new Bird(black, Bird.BirdType.BLACK, physicsManager, birdState.x, birdState.y, collisionManager);
+            }
+
+            birdArrayList.add(bird);
+            stage.addActor(bird.getImage());
+            enableDragAndDrop(bird.getImage(), i);
+            collisionManager.addGameObject(bird);
+            i++;
+        }
+    }
+
+
 
     private void enableDragAndDrop(Image birdImage, int birdIndex) {
         birdImage.addListener(new InputListener() {
@@ -285,6 +330,73 @@ public class GameScreen implements Screen {
         nextBird.getImage().setPosition(catapultX, catapultY);
     }
 
+    private void buildLoadedLevel(SaveGame saveGame) {
+        if (saveGame == null) {
+            System.out.println("No game state to load. Starting with default state.");
+            return;  // Skip if saveGame is null
+        }
+
+        levelGameObjects.clear();
+        blockArrayList.clear();
+        pigArrayList.clear();
+
+        // Validate blocks before creating them
+        for (SaveGame.BlockState blockState : saveGame.blocks) {
+            // Create the block using valid data
+            Block block = null;
+            switch (blockState.type) {
+                case "WOOD":
+                    block = new Wood(block1, physicsManager, blockState.x, blockState.y, 0, collisionManager);
+                    break;
+                case "STONE":
+                    block = new Stone(block2, physicsManager, blockState.x, blockState.y, 0, collisionManager);
+                    break;
+                case "GLASS":
+                    block = new Glass(block3, physicsManager, blockState.x, blockState.y, 0, collisionManager);
+                    break;
+            }
+
+            if (block != null) {
+                blockArrayList.add(block);
+                levelGameObjects.add(block);
+                collisionManager.addGameObject(block);
+                stage.addActor(block.getImage());
+            }
+        }
+
+        // Validate pigs before creating them
+        for (SaveGame.PigState pigState : saveGame.pigs) {
+            if (Math.abs(pigState.x) < 0.001 || Math.abs(pigState.y) < 0.001) {
+                System.out.println("Invalid pig position detected. Skipping pig creation.");
+                continue;  // Skip invalid pigs
+            }
+
+            // Create the pig using valid data
+            Pig pig = null;
+            switch (pigState.type) {
+                case "SMALL":
+                    pig = new Pig(pig1, Pig.PigType.SMALL, physicsManager, pigState.x, pigState.y, collisionManager);
+                    break;
+                case "TEETH":
+                    pig = new Pig(pig2, Pig.PigType.TEETH, physicsManager, pigState.x, pigState.y, collisionManager);
+                    break;
+                case "BIG":
+                    pig = new Pig(pig3, Pig.PigType.BIG, physicsManager, pigState.x, pigState.y, collisionManager);
+                    break;
+            }
+
+            if (pig != null && !pigState.isDestroyed) {
+                pigArrayList.add(pig);
+                stage.addActor(pig.getImage());
+                collisionManager.addGameObject(pig);
+            }
+        }
+    }
+
+
+
+    // Restore blocks
+
 
 
     private void buildLevel(LevelData levelData) {
@@ -353,6 +465,8 @@ public class GameScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        if (isLoaded) return;
+
         if(isInitialized) return;
         isInitialized = true;
 
@@ -587,91 +701,90 @@ public class GameScreen implements Screen {
 
     }
 
-//    public SaveGame getCurrentSaveGame() {
-//        SaveGame state = new SaveGame();
-//        state.currentLevel = currentLevel;
-//
-//        // Save birds
-//        state.birds = new ArrayList<>();
-//        for (Bird bird : birdArrayList) {
-//            if(!bird.isLaunched()){
-//                SaveGame.BirdState birdState = new SaveGame.BirdState();
-//                birdState.x = bird.getBody().getPosition().x * PhysicsManager.BOX_TO_WORLD;
-//                birdState.y = bird.getBody().getPosition().y * PhysicsManager.BOX_TO_WORLD;
-//                birdState.isLaunched = bird.isLaunched();
-//                state.birds.add(birdState);
-//            }
-//        }
-//
-//        // Save blocks
-//        state.blocks = new ArrayList<>();
-//        for (Block block : blockArrayList) {
-//            SaveGame.BlockState blockState = new SaveGame.BlockState();
-//            blockState.x = block.getBody().getPosition().x * PhysicsManager.BOX_TO_WORLD;
-//            blockState.y = block.getBody().getPosition().y * PhysicsManager.BOX_TO_WORLD;
-//            blockState.rotation = block.getBody().getAngle();
-//            if ((GameObject) block instanceof Wood){
-//                blockState.type = "WOOD";
-//            } else if((GameObject) block instanceof Stone){
-//                blockState.type = "STONE";
-//            } else if ((GameObject) block instanceof Glass) {
-//                blockState.type = "GLASS";
-//            }
-//            state.blocks.add(blockState);
-//        }
-//
-//        // Save pigs
-//        state.pigs = new ArrayList<>();
-//        for (Pig pig : pigArrayList) {
-//            SaveGame.PigState pigState = new SaveGame.PigState();
-//            pigState.x = pig.getBody().getPosition().x * PhysicsManager.BOX_TO_WORLD;
-//            pigState.y = pig.getBody().getPosition().y * PhysicsManager.BOX_TO_WORLD;
-//            pigState.isDestroyed = pig.isDestroyed();
-//            state.pigs.add(pigState);
-//        }
-//
-//        return state;
-//    }
-//
-//    public void saveGameStateToFile(SaveGame state) {
-//        com.badlogic.gdx.utils.Json json = new com.badlogic.gdx.utils.Json();
-//        String jsonString = json.toJson(state);
-//
-//        // Save to a file
-//        if(currentLevel == 1){
-//            FileHandle file = Gdx.files.local("saveGameState1.json");
-//            file.writeString(jsonString, false);
-//        } else if (currentLevel == 2) {
-//            FileHandle file = Gdx.files.local("saveGameState2.json");
-//            file.writeString(jsonString, false);
-//        } else {
-//            FileHandle file = Gdx.files.local("saveGameState3.json");
-//            file.writeString(jsonString, false);
-//        }
-//    }
-//
-//    public SaveGame loadSavedGameFromFile() {
-//        FileHandle file;
-//        if(currentLevel == 1){
-//            file = Gdx.files.local("saveGameState1.json");
-//        } else if (currentLevel == 2) {
-//            file = Gdx.files.local("saveGameState2.json");
-//        } else {
-//            file = Gdx.files.local("saveGameState3.json");
-//        }
-//
-//        // Check if the save file exists
-//        if (file.length() == 0) {
-//            System.out.println("No saved game found!");
-//            return null; // Handle gracefully
-//        }
-//
-//        // Read the JSON file
-//        String jsonString = file.readString();
-//
-//        // Deserialize into GameState
-//        com.badlogic.gdx.utils.Json json = new com.badlogic.gdx.utils.Json();
-//        return json.fromJson(SaveGame.class, jsonString);
-//    }
+    public SaveGame getCurrentSaveGame() {
+        SaveGame state = new SaveGame();
+        state.currentLevel = currentLevel;
+
+        // Save only active (not launched) birds
+        state.birds = new ArrayList<>();
+        for (Bird bird : birdArrayList) {
+            if (!bird.isLaunched()) { // Only save birds that aren't launched
+                SaveGame.BirdState birdState = new SaveGame.BirdState();
+                birdState.x = bird.getBody().getPosition().x * PhysicsManager.BOX_TO_WORLD;
+                birdState.y = bird.getBody().getPosition().y * PhysicsManager.BOX_TO_WORLD;
+                birdState.isLaunched = bird.isLaunched();
+
+                // Determine bird type and store it as a string
+                if (bird.getType() == Bird.BirdType.RED) {
+                    birdState.type = "RED";
+                } else if (bird.getType() == Bird.BirdType.YELLOW) {
+                    birdState.type = "YELLOW";
+                } else if (bird.getType() == Bird.BirdType.BLACK) {
+                    birdState.type = "BLACK";
+                }
+
+                state.birds.add(birdState);
+            }
+        }
+
+        // Save only active (not destroyed) blocks
+        state.blocks = new ArrayList<>();
+        for (Block block : blockArrayList) {
+            if (!block.isDestroyed()) { // Only save blocks that aren't destroyed
+                SaveGame.BlockState blockState = new SaveGame.BlockState();
+                blockState.x = block.getBody().getPosition().x * PhysicsManager.BOX_TO_WORLD;
+                blockState.y = block.getBody().getPosition().y * PhysicsManager.BOX_TO_WORLD;
+                blockState.rotation = block.getBody().getAngle();
+                if (block instanceof Wood) {
+                    blockState.type = "WOOD";
+                } else if (block instanceof Stone) {
+                    blockState.type = "STONE";
+                } else if (block instanceof Glass) {
+                    blockState.type = "GLASS";
+                }
+                state.blocks.add(blockState);
+            }
+        }
+
+        // Save only active (not destroyed) pigs
+        state.pigs = new ArrayList<>();
+        for (Pig pig : pigArrayList) {
+            if (!pig.isDestroyed()) { // Only save pigs that aren't destroyed
+                SaveGame.PigState pigState = new SaveGame.PigState();
+                pigState.x = pig.getBody().getPosition().x * PhysicsManager.BOX_TO_WORLD;
+                pigState.y = pig.getBody().getPosition().y * PhysicsManager.BOX_TO_WORLD;
+                pigState.isDestroyed = pig.isDestroyed();
+                state.pigs.add(pigState);
+                if (pig.getType() == Pig.PigType.SMALL) {
+                    pigState.type = "SMALL";
+                } else if (pig.getType() == Pig.PigType.TEETH) {
+                    pigState.type = "TEETH";
+                } else if (pig.getType() == Pig.PigType.BIG) {
+                    pigState.type = "BIG";
+                }
+            }
+        }
+
+        return state;
+    }
+
+
+    public void saveGameStateToFile(SaveGame state) {
+        try {
+            FileHandle file = Gdx.files.local("saveGameState" + currentLevel + ".dat");
+
+            // Create ObjectOutputStream to serialize the object
+            ObjectOutputStream out = new ObjectOutputStream(file.write(false));
+            out.writeObject(state);  // Write the object to the file
+            out.close();  // Close the stream
+
+            System.out.println("Game state saved successfully as binary (.dat)!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to save game state.");
+        }
+    }
+
+
 
 }

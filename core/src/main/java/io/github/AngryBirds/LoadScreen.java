@@ -2,6 +2,7 @@ package io.github.AngryBirds;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -11,6 +12,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 
 public class LoadScreen implements Screen {
     private Main game;
@@ -34,6 +39,33 @@ public class LoadScreen implements Screen {
         Gdx.input.setInputProcessor(stage);
     }
 
+    private SaveGame loadSavedGameFromFile(int currentLevel) {
+        try {
+            FileHandle file = Gdx.files.local("saveGameState" + currentLevel + ".dat");
+
+            // Check if the file exists before attempting to load
+            if (!file.exists()) {
+                System.out.println("No saved game found!");
+                return null;
+            }
+
+            // Read the saved file and deserialize the object
+            ObjectInputStream in = new ObjectInputStream(file.read());
+            SaveGame savedState = (SaveGame) in.readObject();  // Deserialize the saved game state
+            in.close();  // Close the stream
+
+            System.out.println("Game state loaded successfully from binary file!");
+            return savedState;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to load game state.");
+            return null;
+        }
+    }
+
+
+
     @Override
     public void show() {
         loadscreenTexture = new Texture("loadScreen.jpg");
@@ -56,10 +88,24 @@ public class LoadScreen implements Screen {
             }
         });
 
+        Image loadLevel1 = new Image(new Texture("loadBlock.png"));
+        loadLevel1.setPosition(loadLevel1.getWidth() / 2, 0);
+        loadLevel1.addListener(new ClickListener() {
+            public void clicked(InputEvent event, float x, float y) {
+                try {
+
+                    SaveGame save = loadSavedGameFromFile(1);
+                    game.setScreen(new GameScreen(game, 1, true, save));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
         stage.addActor(loadscreen);
         stage.addActor(back);
         stage.addActor(loadGame);
-
+        stage.addActor(loadLevel1);
     }
 
     @Override
