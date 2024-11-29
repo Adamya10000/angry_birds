@@ -22,67 +22,49 @@ public class Box2DCollisionManager implements ContactListener {
         Fixture fixtureA = contact.getFixtureA();
         Fixture fixtureB = contact.getFixtureB();
 
-        // Calculate impact force
         float impactForce = calculateImpactForce(contact);
 
-        //System.out.println(impactForce);
-
-        // Handle collision between objects
         handleCollision(fixtureA, fixtureB, impactForce);
     }
 
     @Override
     public void endContact(Contact contact) {
-        // Optional: Add end contact logic if needed
     }
 
     @Override
     public void preSolve(Contact contact, Manifold oldManifold) {
-        // Optional: Pre-solve collision handling
     }
 
     @Override
     public void postSolve(Contact contact, ContactImpulse impulse) {
-        // Optional: Post-solve collision handling
     }
 
     private float calculateImpactForce(Contact contact) {
-        WorldManifold worldManifold = contact.getWorldManifold();
 
-        // Get bodies involved in the collision
         Body bodyA = contact.getFixtureA().getBody();
         Body bodyB = contact.getFixtureB().getBody();
 
-        // Calculate relative velocity
         Vector2 velocityA = bodyA.getLinearVelocity();
         Vector2 velocityB = bodyB.getLinearVelocity();
 
-        // Calculate velocity difference
         Vector2 relativeVelocity = new Vector2(velocityA).sub(velocityB);
         float velocityMagnitude = relativeVelocity.len();
 
-        // Combine masses
         float massA = bodyA.getMass();
         float massB = bodyB.getMass();
 
-        // More sophisticated impact force calculation
-        // Use kinetic energy: 0.5 * m * v^2
-        float impactForce = 0.5f * (massA + massB) * velocityMagnitude * velocityMagnitude;
-
-        return impactForce;
+        return 0.5f * (massA + massB) * velocityMagnitude * velocityMagnitude;
     }
 
     private void handleCollision(Fixture fixtureA, Fixture fixtureB, float impactForce) {
         Body bodyA = fixtureA.getBody();
         Body bodyB = fixtureB.getBody();
 
-        // Check for ground collision
         if (isGroundCollision(bodyA, bodyB)) {
             handleGroundCollision(bodyA, bodyB, impactForce);
             return;
         }
 
-        // Attempt to find corresponding game objects
         GameObject objA = findGameObject(bodyA);
         GameObject objB = findGameObject(bodyB);
 
@@ -102,8 +84,6 @@ public class Box2DCollisionManager implements ContactListener {
     }
 
     private boolean isGroundCollision(Body bodyA, Body bodyB) {
-        // Assuming the ground body is a static body created in PhysicsManager
-        // You might need to adjust this based on how your ground is specifically implemented
         return (bodyA.getType() == BodyDef.BodyType.StaticBody && bodyA.getUserData() == "ground") ||
             (bodyB.getType() == BodyDef.BodyType.StaticBody && bodyB.getUserData() == "ground");
     }
@@ -112,32 +92,21 @@ public class Box2DCollisionManager implements ContactListener {
         GameObject impactObject = findGameObject(impactBody);
 
         if (impactObject != null) {
-            // Calculate ground impact damage
             float groundImpactDamage = calculateGroundImpactDamage(impactForce);
-
-            // Apply damage to the object
             impactObject.takeDamage(groundImpactDamage, impactObject);
 
-            // Optional: Add logging or additional ground impact logic
-            System.out.println("Object impacted ground with force: " + impactForce +
-                ", Damage dealt: " + groundImpactDamage);
         }
     }
 
     private float calculateGroundImpactDamage(float impactForce) {
-        // Implement a damage calculation based on impact force
-        // You can adjust this formula as needed
-        float baseDamage = 20f; // Base damage for ground impact
-        float damageMultiplier = 0.1f; // Scaling factor for impact force
+        float baseDamage = 20f;
+        float damageMultiplier = 0.1f;
 
-        // Calculate damage, ensuring it doesn't go below 0
         return Math.max(0, baseDamage + (impactForce * damageMultiplier));
     }
 
 
     private void handleBirdPigCollision(GameObject obj1, GameObject obj2, float impactForce) {
-        // Determine which is the bird and which is the pig
-        System.out.println("Entered Pig BIrd Collision");
         GameObject bird = (obj1 instanceof Bird) ? obj1 : obj2;
         GameObject pig = (obj1 instanceof Pig) ? obj1 : obj2;
 

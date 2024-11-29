@@ -18,7 +18,7 @@ public class PhysicsManager {
     private SpriteBatch batch;
 
     public PhysicsManager() {
-        Vector2 gravity = new Vector2(0, -7f);
+        Vector2 gravity = new Vector2(0, 0f);
         world = new World(gravity, true);
 
         debugRenderer = new Box2DDebugRenderer();
@@ -32,7 +32,7 @@ public class PhysicsManager {
     private void createGroundBody() {
         BodyDef groundBodyDef = new BodyDef();
         groundBodyDef.type = BodyDef.BodyType.StaticBody;
-        groundBodyDef.position.set(0, 0.9f); // Set ground level to 200f
+        groundBodyDef.position.set(0, 0.95f); // Set ground level to 200f
 
         groundBody = world.createBody(groundBodyDef);
 

@@ -14,7 +14,7 @@ public class LevelData {
 
     public static class GameObj {
         public enum Type {
-            WOOD, STONE, GLASS, PIG, REDBIRD, YELLOWBIRD, BLACKBIRD
+            WOOD, STONE, GLASS, PIG1, PIG2, PIG3, REDBIRD, YELLOWBIRD, BLACKBIRD
         }
 
         private Type type;

@@ -1,13 +1,9 @@
 package io.github.AngryBirds;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.CircleShape;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 public class Bird implements GameObject {
@@ -15,21 +11,28 @@ public class Bird implements GameObject {
     private Image birdImage;
     private float health;
     private boolean destroyed;
-    private float damage;
-    private PhysicsManager physicsManager;
+    private float mass;
     private static final float MAX_HEALTH = 3f;
     private boolean isLaunched = false;
-    private Stage stage;
     private Box2DCollisionManager collisionManager;
     private boolean markedForRemoval = false;
 
+    // Enhanced Bird Types with Damage Multipliers
     public enum BirdType {
-        RED(50f), YELLOW(75f), BLACK(100f);
+        RED(4f, 50.0f),
+        YELLOW(6f, 75.0f),
+        BLACK(8f, 100.0f);
 
+        private final float mass;
         private final float damageMultiplier;
 
-        BirdType(float damage) {
-            this.damageMultiplier = damage;
+        BirdType(float mass, float damageMultiplier) {
+            this.mass = mass;
+            this.damageMultiplier = damageMultiplier;
+        }
+
+        public float getM() {
+            return mass;
         }
 
         public float getDamageMultiplier() {
@@ -37,16 +40,15 @@ public class Bird implements GameObject {
         }
     }
 
+
     private BirdType type;
 
-    public Bird(TextureRegion texture, BirdType type, PhysicsManager physicsManager, float x, float y, Stage stage, Box2DCollisionManager collisionManager)     {
+    public Bird(TextureRegion texture, BirdType type, PhysicsManager physicsManager, float x, float y, Box2DCollisionManager collisionManager) {
         this.birdImage = new Image(texture);
         this.type = type;
         this.health = MAX_HEALTH;
-        this.damage = type.getDamageMultiplier();
+        this.mass = type.getM();
         this.destroyed = false;
-        this.physicsManager = physicsManager;
-        this.stage = stage;
         this.collisionManager = collisionManager;
 
         // Create body using PhysicsManager method
@@ -56,7 +58,6 @@ public class Bird implements GameObject {
 
     public void launch(Vector2 launchVelocity) {
         if (!isLaunched) {
-            // Change body type to dynamic when launched
             birdBody.setType(BodyDef.BodyType.DynamicBody);
             birdBody.setLinearVelocity(launchVelocity);
             isLaunched = true;
@@ -67,15 +68,23 @@ public class Bird implements GameObject {
     public void takeDamage(float impactForce, GameObject obj) {
         float damage = impactForce * 0.2f;
         health -= damage;
-        System.out.println("Remaining health of BIRD " + type + ": " + health);
-
-        if (health <= 0) {
-            System.out.println("here0");
-            removeFromGame(obj);
-            System.out.println("here - 1");
-
-        }
     }
+
+    public float calculateDamageToTarget(GameObject target, float impactForce) {
+        // Massive base damage calculation
+        float baseDamage = impactForce ; // Dramatically increased base damage
+
+        if (target instanceof Pig) {
+            // Extremely high damage to pigs
+            return baseDamage * type.getDamageMultiplier() ;
+        } else if (target instanceof Block) {
+            // Massive block destruction potential
+            return baseDamage * type.getDamageMultiplier() * 10;
+        }
+
+        return baseDamage;
+    }
+
 
     @Override
     public void removeFromGame(GameObject obj) {
@@ -91,8 +100,6 @@ public class Bird implements GameObject {
         if (birdBody != null) {
             birdBody.setActive(false);
         }
-
-        // Remove image from stage
         birdImage.remove();
 
     }
@@ -114,7 +121,7 @@ public class Bird implements GameObject {
 
     @Override
     public float getMass() {
-        return 5f;
+        return mass;
     }
 
     @Override
@@ -131,7 +138,4 @@ public class Bird implements GameObject {
         return isLaunched;
     }
 
-    public float getDamage() {
-        return damage;
-    }
 }

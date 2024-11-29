@@ -1,10 +1,7 @@
 package io.github.AngryBirds;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 public class Pig implements GameObject {
@@ -13,37 +10,63 @@ public class Pig implements GameObject {
     private float health;
     private boolean destroyed;
     private PhysicsManager physicsManager;
-    private static final float MAX_HEALTH = 1f;
-    private static final float PIG_MASS = 10f;
-    private Stage stage;
     private Box2DCollisionManager collisionManager;
     private boolean markedForRemoval = false;
     private float damage;
 
+    public enum PigType {
+        SMALL(2f, 5f),
+        TEETH(3f, 10f),
+        BIG(20f, 15f);
 
-    public Pig(TextureRegion texture, PhysicsManager physicsManager, float x, float y, Stage stage, Box2DCollisionManager collisionManager) {
+        private final float maxHealth;
+        private final float damageMultiplier;
+
+        PigType(float health, float damage) {
+            this.maxHealth = health;
+            this.damageMultiplier = damage;
+        }
+
+        public float getMaxHealth() {
+            return maxHealth;
+        }
+
+        public float getDamageMultiplier() {
+            return damageMultiplier;
+        }
+    }
+
+    private PigType type;
+
+    public Pig(TextureRegion texture, PigType type, PhysicsManager physicsManager, float x, float y, Box2DCollisionManager collisionManager) {
         this.pigImage = new Image(texture);
-        this.health = MAX_HEALTH;
+        this.type = type;
+        this.health = type.getMaxHealth();
+        this.damage = type.getDamageMultiplier();
         this.destroyed = false;
         this.physicsManager = physicsManager;
-        this.stage = stage;
-        this.damage = 10f;
+        this.collisionManager = collisionManager;
+
         // Create body using PhysicsManager method
         float pigWidth = pigImage.getWidth();
         float pigHeight = pigImage.getHeight();
         pigBody = physicsManager.createPigBody(x, y, pigWidth/2, pigHeight/2);
-        this.collisionManager = collisionManager;
     }
 
     @Override
     public void takeDamage(float impactForce, GameObject obj) {
-        // Damage calculation based on impact force
-        float damage = impactForce * 0.5f; // Adjust multiplier as needed
-        health -= damage;
-        System.out.println("Remaining health of PIG: " + health);
+        float damageMultiplier = 1.0f;
+
+        if (obj instanceof Bird) {
+            Bird bird = (Bird) obj;
+            damageMultiplier = bird.calculateDamageToTarget(this, impactForce);
+        }
+
+        float effectiveDamage = impactForce * damageMultiplier;
+        health -= effectiveDamage;
 
         if (health <= 0) {
-            removeFromGame(obj); // Remove from stage
+            removeFromGame(obj);
         }
     }
 
@@ -64,7 +87,12 @@ public class Pig implements GameObject {
 
     @Override
     public float getMass() {
-        return PIG_MASS;
+        switch (type) {
+            case SMALL: return 5f;
+            case TEETH: return 10f;
+            case BIG: return 15f;
+            default: return 10f;
+        }
     }
 
     @Override
@@ -74,13 +102,11 @@ public class Pig implements GameObject {
 
     @Override
     public void removeFromGame(GameObject obj) {
-
         if (destroyed) return;
 
         destroyed = true;
         collisionManager.removeFromGameObject(obj);
-        // Remove from physics world
-        markedForRemoval = true; // Mark for safe removal
+        markedForRemoval = true;
     }
 
     @Override
@@ -91,11 +117,14 @@ public class Pig implements GameObject {
             pigBody.setActive(false);
         }
 
-        // Remove image from stage
         pigImage.remove();
     }
 
     public float getDamage() {
         return damage;
+    }
+
+    public PigType getType() {
+        return type;
     }
 }

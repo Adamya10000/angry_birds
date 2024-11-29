@@ -50,17 +50,17 @@ public class GameScreen implements Screen {
     private Texture blockSprites;
     private Texture pigSprites;
     private Texture birdSprites;
-    private TextureRegion block1, block2, block3, block4, square1, square2, square3, pig1, pig2, red, yellow, black;
+    private TextureRegion block1, block2, block3, block4, square1, square2, square3, pig1, pig2, pig3, red, yellow, black;
 
     // Constants
     private static final int VIRTUAL_WIDTH = 2560;
     private static final int VIRTUAL_HEIGHT = 1440;
 
     // Catapult and bird sequence
-    private float catapultX = 270; // Catapult's X position
-    private float catapultY = 460; // Catapult's Y position
-    private Image[] birds; // Array to hold the bird images in sequence
-    private int currentBirdIndex = 0; // Tracks the currently active bird
+    private float catapultX = 270;
+    private float catapultY = 460;
+    private Image[] birds;
+    private int currentBirdIndex = 0;
     private Image redImage, yellowImage, blackImage;
 
     //Lists of objects
@@ -69,7 +69,6 @@ public class GameScreen implements Screen {
     private ArrayList<Block> blockArrayList;
     private ArrayList<Pig> pigArrayList;
 
-    private int pigCount = 0;
 
     public GameScreen(Main game, int level) {
         this.game = game;
@@ -94,9 +93,9 @@ public class GameScreen implements Screen {
         pigSprites = new Texture("pigSprites.png");
         birdSprites = new Texture("birdSprites.png");
 
-        // Initialize texture regions (same as before)
         pig1 = new TextureRegion(pigSprites, 255, 640, 99, 98);
         pig2 = new TextureRegion(pigSprites, 255, 740, 99, 98);
+        pig3 = new TextureRegion(pigSprites, 131,0,125,110);
 
         block1 = new TextureRegion(blockSprites, 320, 627, 202, 17);
         block2 = new TextureRegion(blockSprites, 490, 715, 111, 17);
@@ -142,28 +141,24 @@ public class GameScreen implements Screen {
     }
 
     private void setupBirds() {
-        // Create Bird objects with their respective types
-        redBird = new Bird(red, Bird.BirdType.RED, physicsManager, catapultX, catapultY, stage,collisionManager);
-        yellowBird = new Bird(yellow, Bird.BirdType.YELLOW, physicsManager, 150, 220, stage, collisionManager);
-        blackBird = new Bird(black, Bird.BirdType.BLACK, physicsManager, 60, 220, stage, collisionManager);
+        redBird = new Bird(red, Bird.BirdType.RED, physicsManager, catapultX, catapultY, collisionManager);
+        yellowBird = new Bird(yellow, Bird.BirdType.YELLOW, physicsManager, 150, 220, collisionManager);
+        blackBird = new Bird(black, Bird.BirdType.BLACK, physicsManager, 60, 220, collisionManager);
 
         birdArrayList.add(redBird);
         birdArrayList.add(yellowBird);
         birdArrayList.add(blackBird);
-        // Position birds initially off-screen, only the first bird is on the catapult
+
         redImage = redBird.getImage();
         redImage.setPosition(catapultX, catapultY);
         redImage.setSize(redImage.getWidth()*2 , redImage.getHeight() *2);
 
         yellowImage = yellowBird.getImage();
-        //yellowImage.setPosition(0, 0);
         yellowImage.setSize(yellowImage.getWidth() , yellowImage.getHeight() );
 
         blackImage = blackBird.getImage();
-        //blackImage.setPosition(50, 200);
         blackImage.setSize(blackImage.getWidth() , blackImage.getHeight() );
 
-        // Add birds to lists and stage
         birds = new Image[]{redImage, yellowImage, blackImage};
         birdObjects = Arrays.asList(redBird, yellowBird, blackBird);
 
@@ -171,32 +166,21 @@ public class GameScreen implements Screen {
             stage.addActor(birds[i]);
             enableDragAndDrop(birds[i], i);
 
-            // Add to collision manager
             collisionManager.addGameObject(birdObjects.get(i));
-            //System.out.println(" Bird : " + collisionManager.getGameObjects().size());
         }
     }
-
-
-    // Create Bird objects specific to Box2D
-    //    Bird redBird = new Bird(red, Bird.BirdType.RED, physicsManager, catapultX, catapultY);
-    //    Bird yellowBird = new Bird(yellow, Bird.BirdType.YELLOW, physicsManager, -100, -100);
-    //    Bird blackBird = new Bird(black, Bird.BirdType.BLACK, physicsManager, -100, -100);
 
     private void enableDragAndDrop(Image birdImage, int birdIndex) {
         birdImage.addListener(new InputListener() {
             private boolean isDragging = false;
-            private Bird currentBird;
-            private Vector2 originalPosition;
+            private Bird currentBird;;
 
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                // Only allow dragging the current bird
                 if (birdIndex != currentBirdIndex) {
                     return false;
                 }
                 currentBird = birdObjects.get(birdIndex);
-                // Ensure bird hasn't been launched yet
                 if (currentBird.isLaunched()) {
                     return false;
                 }
@@ -209,28 +193,23 @@ public class GameScreen implements Screen {
             public void touchDragged(InputEvent event, float x, float y, int pointer) {
                 if (!isDragging) return;
 
-                // Convert screen coordinates to world coordinates
                 Vector2 touchPos = stage.screenToStageCoordinates(
                     new Vector2(Gdx.input.getX(), Gdx.input.getY())
                 );
 
-                // Get current bird's position
                 Vector2 birdPosition = new Vector2(
                     currentBird.getBody().getPosition().x * PhysicsManager.BOX_TO_WORLD,
                     currentBird.getBody().getPosition().y * PhysicsManager.BOX_TO_WORLD
                 );
 
-                // Limit dragging to a reasonable range around the catapult
                 float maxDragDistance = 200f;
                 Vector2 catapultVector = new Vector2(catapultX, catapultY);
                 Vector2 dragVector = touchPos.sub(catapultVector);
 
-                // Clamp drag distance
                 if (dragVector.len() > maxDragDistance) {
                     dragVector.nor().scl(maxDragDistance);
                 }
 
-                // Update bird position visually
                 Body birdBody = currentBird.getBody();
                 birdBody.setTransform(
                     new Vector2(
@@ -314,52 +293,59 @@ public class GameScreen implements Screen {
 
         for (LevelData.GameObj obj : levelData.getObjects()) {
             GameObject gameObject = null;
+            Image objectImage;
 
             switch (obj.getType()) {
                 case WOOD:
-                    gameObject = new Wood(obj.getTexture(), physicsManager, obj.getX(), obj.getY(), obj.getRotation(), stage, collisionManager);
+                    gameObject = new Wood(obj.getTexture(), physicsManager, obj.getX(), obj.getY(), obj.getRotation(), collisionManager);
                     blockArrayList.add((Block) gameObject);
                     break;
                 case STONE:
-                    gameObject = new Stone(obj.getTexture(), physicsManager, obj.getX(), obj.getY(), obj.getRotation(), stage, collisionManager);
+                    gameObject = new Stone(obj.getTexture(), physicsManager, obj.getX(), obj.getY(), obj.getRotation(), collisionManager);
                     blockArrayList.add((Block) gameObject);
                     break;
                 case GLASS:
-                    gameObject = new Glass(obj.getTexture(), physicsManager, obj.getX(), obj.getY(), obj.getRotation(), stage, collisionManager);
+                    gameObject = new Glass(obj.getTexture(), physicsManager, obj.getX(), obj.getY(), obj.getRotation(), collisionManager);
                     blockArrayList.add((Block) gameObject);
                     break;
-                case PIG:
-                    pigCount++;
-                    gameObject = new Pig(obj.getTexture(), physicsManager, obj.getX(), obj.getY(), stage, collisionManager);
+                case PIG1:
+                    gameObject = new Pig(obj.getTexture(), Pig.PigType.SMALL, physicsManager, obj.getX(), obj.getY(),  collisionManager);
                     pigArrayList.add((Pig) gameObject);
-                    Image objectImage = gameObject.getImage();
+                    objectImage = gameObject.getImage();
                     objectImage.setSize(objectImage.getWidth() / 2, objectImage.getHeight() / 2);
+                    break;
+                case PIG2:
+                    gameObject = new Pig(obj.getTexture(), Pig.PigType.TEETH, physicsManager, obj.getX(), obj.getY(),  collisionManager);
+                    pigArrayList.add((Pig) gameObject);
+                    objectImage = gameObject.getImage();
+                    objectImage.setSize(objectImage.getWidth() / 1.7f, objectImage.getHeight() / 1.7f);
+                    break;
+                case PIG3:
+                    gameObject = new Pig(obj.getTexture(), Pig.PigType.BIG, physicsManager, obj.getX(), obj.getY(),  collisionManager);
+                    pigArrayList.add((Pig) gameObject);
+                    objectImage = gameObject.getImage();
+                    objectImage.setSize(objectImage.getWidth() / 1.3f  , objectImage.getHeight() /1.3f );
                     break;
                 case REDBIRD:
                 case YELLOWBIRD:
                 case BLACKBIRD:
-                    continue;
                 default:
                     continue;
             }
 
-            if (gameObject != null) {
-                // Add image to stage with doubled size and precise positioning
-                Image objectImage = gameObject.getImage();
+            objectImage = gameObject.getImage();
 
-                // Adjust positioning logic to center the image
-                float imageWidth = objectImage.getWidth();
-                float imageHeight = objectImage.getHeight();
-                objectImage.setPosition(
-                    obj.getX() - imageWidth / 2,
-                    obj.getY() - imageHeight / 2
-                );
-                objectImage.setRotation(obj.getRotation());
-                stage.addActor(objectImage);
+            float imageWidth = objectImage.getWidth();
+            float imageHeight = objectImage.getHeight();
+            objectImage.setPosition(
+                obj.getX() - imageWidth / 2,
+                obj.getY() - imageHeight / 2
+            );
+            objectImage.setRotation(obj.getRotation());
+            stage.addActor(objectImage);
 
-                levelGameObjects.add(gameObject);
-                collisionManager.addGameObject(gameObject);
-            }
+            levelGameObjects.add(gameObject);
+            collisionManager.addGameObject(gameObject);
         }
     }
 
@@ -371,21 +357,17 @@ public class GameScreen implements Screen {
         setupUI();
         setupCatapult();
 
-        // Initialize level manager with textures
         TextureRegion[] blockTextures = {block1, block2, block3, block4, square1, square2, square3};
-        TextureRegion[] pigTextures = {pig1, pig2};
+        TextureRegion[] pigTextures = {pig1, pig2, pig3};
         TextureRegion[] birdTextures = {red, yellow, black};
         levelManager = new LevelManager(blockTextures, pigTextures, birdTextures);
 
-        // Get current level data and build level
         LevelData currentLevelData = levelManager.getLevel(currentLevel);
         if (currentLevelData != null) {
             buildLevel(currentLevelData);
             setupBirds();
         }
-        if(currentLevel == 3){
-            physicsManager.setWorldGravity(new Vector2(0, 0f));
-        }
+        physicsManager.setWorldGravity(new Vector2(0, -7f));
 
     }
 
@@ -394,23 +376,17 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Update physics simulation
         physicsManager.updatePhysics(delta);
         physicsManager.renderDebug();
 
         shapeRenderer.setProjectionMatrix(stage.getCamera().combined);
 
-
-        // Update stage and actors
         stage.act(delta);
 
-        // Update object positions based on physics bodies
         updateObjectPositions();
 
-        // Draw stage
         stage.draw();
 
-        // Draw the trajectory if dragging
         if (currentDragVector != null && startPoint != null) {
             shapeRenderer.setProjectionMatrix(stage.getCamera().combined);
             drawProjectileTrajectory(currentDragVector, startPoint);
@@ -432,30 +408,23 @@ public class GameScreen implements Screen {
     }
 
     private void checkLevelCompletion() {
-        // Check if all birds have been launched
         boolean allPigsDestroyed = pigArrayList.stream().allMatch(pig -> pig.isDestroyed());
         if ((currentBirdIndex >= birdObjects.size()) || (allPigsDestroyed)) {
             Timer.schedule(new Timer.Task() {
                 @Override
                 public void run() {
-                    // Check if all pigs have been destroyed
-
                     if (allPigsDestroyed) {
                         game.setScreen(new WinScreen(game, viewport, camera, gameScreen, currentLevel));
-                        // Transition to win screen
                     } else {
                         game.setScreen(new LoseScreen(game, viewport, camera, gameScreen, currentLevel));
-                        // Optional: Transition to fail screen or restart level
-                        //game.setScreen(new FailScreen(game, currentLevel));
                     }
                 }
-            }, 3f); // 5 seconds delay
+            }, 4f);
         }
     }
 
     private void drawProjectileTrajectory(Vector2 dragVector, Vector2 startPoint) {
-        // Use LINE method with increased line width
-        Gdx.gl.glLineWidth(6f); // Increase line thickness
+        Gdx.gl.glLineWidth(6f);
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(1, 1, 1, 1); // Black color
